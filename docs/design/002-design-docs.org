@@ -1,0 +1,132 @@
+#+TITLE: 002 - Design Doc Pattern
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Accepted
+#+CREATED: [2026-01-04]
+#+LAST_MODIFIED: [2026-01-04]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+Design documents are the canonical archive of decisions and tasks. Each
+document follows an RFC/RFD pattern with structured sections for
+motivation, design options, decisions, tasks, and questions.
+
+* Motivation
+
+Without structured design docs:
+- Decisions get lost in chat/email/PR comments
+- Task context is separated from task definition
+- New team members can't understand "why" behind code
+- Agents lack the context needed to make good decisions
+
+* Design
+
+** Document Structure
+
+Each design doc has these sections:
+
+| Section    | Purpose                              |
+|------------+--------------------------------------|
+| Summary    | One paragraph overview               |
+| Motivation | Problem being solved, why it matters |
+| Design     | Options considered, tradeoffs        |
+| Decision   | What was chosen and why              |
+| Tasks      | Implementation work with IDs         |
+| Questions  | Open and decided questions           |
+
+** Frontmatter
+
+Standard org-mode properties at the top:
+
+#+begin_example
+#+TITLE: NNN - Title
+#+AUTHOR: Author Name
+#+STATUS: Draft
+#+CREATED: [2026-01-04]
+#+LAST_MODIFIED: [2026-01-04]
+#+SETUPFILE: ../../org-setup.org
+#+end_example
+
+** Status Lifecycle
+
+#+begin_example
+Draft → Discussion → Accepted → Implementing → Complete
+                  ↘ Abandoned
+#+end_example
+
+| Status       | Meaning                        |
+|--------------+--------------------------------|
+| Draft        | Author still developing        |
+| Discussion   | Ready for team review          |
+| Accepted     | Approved, tasks can be started |
+| Implementing | Work in progress               |
+| Complete     | All tasks done                 |
+| Abandoned    | Stopped, documented why        |
+
+** Task Format
+
+Tasks are org headings with structured IDs:
+
+#+begin_example
+** TODO [PROJECT-NNN-XX] Task title                         :p1:core:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Description of what needs to be done.
+#+end_example
+
+| Component | Meaning                           |
+|-----------+-----------------------------------|
+| PROJECT   | Project prefix (e.g., DAB, GF)    |
+| NNN       | Design doc number (e.g., 001)     |
+| XX        | Task sequence (e.g., 01, 02)      |
+
+** Question Format
+
+Questions track decisions that need to be made:
+
+#+begin_example
+** OPEN How should we handle X?
+
+Context and options being considered.
+
+** DECIDED Should we use Y or Z?
+:PROPERTIES:
+:DECIDED: [2026-01-04]
+:END:
+
+Chose Y because of reasons.
+#+end_example
+
+** Numbering Scheme
+
+|   Range | Category          |
+|---------+-------------------|
+|     000 | Template          |
+| 001-099 | Core system       |
+| 100-199 | Features          |
+| 200-299 | Infrastructure    |
+| 300-399 | Tooling           |
+| 800-899 | Analysis/Research |
+| 900-999 | Proposals/Future  |
+
+* Decision
+
+Adopt the RFC/RFD pattern with org-mode, using:
+- Structured frontmatter for metadata
+- Hierarchical task IDs for traceability
+- Inline questions with OPEN/DECIDED states
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** DONE [DAB-002-01] Create design doc template                         :p0:
+CLOSED: [2026-01-04]
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Create =000-template.org= with all standard sections.

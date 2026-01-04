@@ -1,0 +1,134 @@
+#+TITLE: 003 - Backlog Workflow
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Accepted
+#+CREATED: [2026-01-04]
+#+LAST_MODIFIED: [2026-01-04]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+The backlog is a working surface for active development. Tasks are
+"checked out" from design docs, worked on with progress notes, then
+"reconciled" back to the canonical source on completion.
+
+* Motivation
+
+Design docs should stay clean and focused on decisions. But active
+work needs a scratch space for:
+- Progress notes and discoveries
+- Blocked/waiting states
+- Work-in-progress that isn't ready to update the design doc
+
+The backlog provides this working surface while maintaining design
+docs as the source of truth.
+
+* Design
+
+** Backlog Structure
+
+#+begin_example
+#+TITLE: Project Backlog
+#+SETUPFILE: ./org-setup.org
+
+* Current WIP
+
+** Active
+*** TODO [PROJECT-NNN-XX] Task title
+:PROPERTIES:
+:SOURCE: [[file:docs/design/NNN-doc.org::*heading][NNN in doc.org]]
+:EFFORT: M
+:END:
+
+Progress notes here.
+
+** Blocked
+*** TODO [PROJECT-NNN-YY] Blocked task
+:PROPERTIES:
+:SOURCE: [[file:...][...]]
+:REASON: Waiting for X
+:END:
+
+** Up Next
+
+* Version Milestones
+* About This File
+* Setup
+* Queries
+#+end_example
+
+** The Workflow
+
+#+begin_example
+Design Doc                    Backlog
+┌──────────────────┐          ┌──────────────────┐
+│ ** TODO [ID]     │─checkout→│ *** TODO [ID]    │
+│                  │          │ :SOURCE: link    │
+└──────────────────┘          │ progress notes   │
+                              └────────┬─────────┘
+                                       │ work
+                                       ▼
+                             ┌──────────────────┐
+                             │ *** DONE [ID]    │
+                             │ final notes      │
+                             └────────┬─────────┘
+                                      │ reconcile
+                                      ▼
+┌──────────────────┐         ┌──────────────────┐
+│ ** DONE [ID]     │←────────│ (removed)        │
+│ :VERSION: v1.0   │         └──────────────────┘
+└──────────────────┘
+#+end_example
+
+** Checkout
+
+When starting work on a task:
+
+1. Find task in design doc by ID
+2. Copy to =backlog.org= under =** Active=
+3. Add =:SOURCE:= property linking back
+4. Copy =:EFFORT:= if present
+
+** Work
+
+While working:
+- Add dated progress notes under the task
+- Move to =** Blocked= if waiting on something
+- Keep notes that might inform the design doc
+
+** Reconcile
+
+When task is complete:
+
+1. Update design doc:
+   - Change =TODO= to =DONE=
+   - Add =CLOSED: [date]= timestamp
+   - Add =:VERSION:= property if applicable
+   - Update prose if design evolved
+
+2. Remove from backlog (entry is ephemeral)
+
+** Properties
+
+| Property | Purpose                         |
+|----------+---------------------------------|
+| SOURCE   | Link to canonical task location |
+| EFFORT   | Estimated time                  |
+| REASON   | Why task is blocked             |
+
+* Decision
+
+Use the checkout/reconcile pattern with backlog as ephemeral working
+surface and design docs as permanent record.
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** DONE [DAB-003-01] Create backlog.org template                        :p0:
+CLOSED: [2026-01-04]
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Create template with Current WIP, Milestones, About, Setup, Queries sections.

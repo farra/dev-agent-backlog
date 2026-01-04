@@ -1,0 +1,158 @@
+#+TITLE: dev-agent-backlog Backlog
+#+SETUPFILE: ./org-setup.org
+
+* Current WIP
+
+Active tasks checked out from design docs.
+
+** Active
+
+** Blocked
+
+** Up Next
+
+* About This File
+
+This is the *working surface* for dev-agent-backlog development.
+
+*Design docs* (=docs/design/*.org=) are the canonical archive of decisions and tasks.
+*This file* is where active work gets checked out, tracked, and reconciled.
+
+** System Overview
+
+#+begin_example
+  Design Docs (canonical)              backlog.org (working surface)
+  ┌─────────────────────────┐         ┌─────────────────────────┐
+  │ ** TODO [DAB-001-01]    │─checkout→ *** TODO [DAB-001-01]  │
+  │                         │         │ :SOURCE: [[file:...]]  │
+  └─────────────────────────┘         │ progress notes...      │
+                                      └───────────┬────────────┘
+                                                  │ work
+                                                  ▼
+                                      ┌─────────────────────────┐
+                                      │ *** DONE [DAB-001-01]   │
+                                      └───────────┬────────────┘
+                                                  │ reconcile
+                                                  ▼
+  ┌─────────────────────────┐         ┌─────────────────────────┐
+  │ ** DONE [DAB-001-01]    │←────────│ (removed)               │
+  │ :VERSION: v1.0          │         └─────────────────────────┘
+  └─────────────────────────┘
+#+end_example
+
+** Workflow
+
+1. *Checkout*: Copy task to Active, add =:SOURCE:= link
+2. *Work*: Add progress notes here
+3. *Reconcile*: Update design doc, remove from here
+
+** Task Format
+
+#+begin_example
+*** TODO [DAB-001-01] Task title
+:PROPERTIES:
+:SOURCE: [[file:docs/design/001-system-overview.org::*Tasks][001 Tasks]]
+:EFFORT: M
+:END:
+
+Progress notes here.
+#+end_example
+
+** Related Files
+
+| File                    | Purpose                       |
+|-------------------------+-------------------------------|
+| [[file:org-setup.org][org-setup.org]]           | Shared org-mode configuration |
+| [[file:docs/design/README.org][docs/design/README.org]]  | Index of all design docs      |
+| [[file:docs/design/000-template.org][000-template.org]]        | Template for new design docs  |
+
+* Setup
+
+** Emacs Agenda Configuration
+
+#+begin_src emacs-lisp :results silent
+(setq org-agenda-files
+      (file-expand-wildcards "path/to/project/docs/design/*.org"))
+#+end_src
+
+** Task Queue Command
+
+#+begin_src emacs-lisp
+(defun dab-task-queue ()
+  "Queue the task at point into backlog.org Active section."
+  (interactive)
+  (unless (org-at-heading-p)
+    (user-error "Not on a heading"))
+  (let* ((source-file (buffer-file-name))
+         (heading (org-get-heading t t t t))
+         (task-id (when (string-match "\\[\\([A-Z]+-[0-9]+-[0-9]+\\)\\]" heading)
+                    (match-string 1 heading)))
+         (effort (org-entry-get nil "EFFORT"))
+         (source-link (format "[[file:%s::*%s][%s in %s]]"
+                              (file-relative-name source-file)
+                              (url-hexify-string heading)
+                              (or task-id "source")
+                              (file-name-nondirectory source-file)))
+         (backlog-file (expand-file-name "backlog.org"
+                         (locate-dominating-file source-file "backlog.org"))))
+    (unless task-id
+      (user-error "No task ID found in heading"))
+    (find-file backlog-file)
+    (goto-char (point-min))
+    (unless (re-search-forward "^\\*\\* Active" nil t)
+      (user-error "Could not find '** Active' section"))
+    (org-end-of-subtree)
+    (insert (format "\n\n*** TODO %s
+:PROPERTIES:
+:SOURCE: %s%s
+:END:
+
+" heading source-link (if effort (format "\n:EFFORT: %s" effort) "")))
+    (message "Queued %s into backlog.org" task-id)))
+#+end_src
+
+* Queries
+
+** Task Summary
+
+#+begin_src emacs-lisp :results output
+(let ((files (file-expand-wildcards
+              (expand-file-name "docs/design/[0-9]*.org"
+                                (file-name-directory (buffer-file-name)))))
+      (todo-count 0) (wip-count 0) (hold-count 0) (done-count 0))
+  (dolist (file files)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* TODO " nil t) (cl-incf todo-count))
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* WIP " nil t) (cl-incf wip-count))
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* HOLD " nil t) (cl-incf hold-count))
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* DONE " nil t) (cl-incf done-count))))
+  (princ (format "Task Summary:\n"))
+  (princ (format "  TODO: %3d\n" todo-count))
+  (princ (format "  WIP:  %3d\n" wip-count))
+  (princ (format "  HOLD: %3d\n" hold-count))
+  (princ (format "  DONE: %3d\n" done-count))
+  (princ (format "  Total: %d\n" (+ todo-count wip-count hold-count done-count))))
+#+end_src
+
+* Quick Reference
+
+| Status       | Meaning                      |
+|--------------+------------------------------|
+| Draft        | Under development            |
+| Discussion   | Ready for review             |
+| Accepted     | Approved, ready to implement |
+| Implementing | Implementation in progress   |
+| Complete     | Implemented and verified     |
+| Abandoned    | Stopped, not viable          |
+
+| Task State | Meaning             |
+|------------+---------------------|
+| TODO       | Not started         |
+| WIP        | Work in progress    |
+| HOLD       | Blocked or deferred |
+| DONE       | Completed           |

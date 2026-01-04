@@ -1,0 +1,142 @@
+#+TITLE: 001 - System Overview
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Accepted
+#+CREATED: [2026-01-04]
+#+LAST_MODIFIED: [2026-01-04]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+dev-agent-backlog is a task management system designed for human-agent
+collaboration. It combines org-mode design documents, a backlog working
+surface, and Claude Code integration to create a workflow where agents
+can effectively participate in project planning and execution.
+
+* Motivation
+
+Traditional task management systems (GitHub Issues, Jira, Linear) are
+designed for human-to-human collaboration. They present challenges for
+AI coding agents:
+
+| Challenge               | Traditional Systems             | This System                     |
+|-------------------------+---------------------------------+---------------------------------|
+| Context locality        | Issue separate from design docs | Task lives in design doc        |
+| Atomic updates          | API call separate from code     | File change in same commit      |
+| API friction            | Auth, rate limits, network      | Direct file read/write          |
+| Source of truth         | Issue is primary                | Design doc is primary           |
+| Structured but flexible | Rigid fields                    | Org-mode properties + free text |
+
+* Design
+
+The system has four components:
+
+** 1. Design Documents (Canonical Archive)
+
+Org-mode files in =docs/design/= following an RFC/RFD pattern:
+- Each document captures a decision and its rationale
+- Tasks are defined inline with =** TODO [ID]= headings
+- Questions tracked with =** OPEN= / =** DECIDED= states
+
+** 2. Backlog (Working Surface)
+
+A single =backlog.org= file that serves as the active working surface:
+- Tasks are "checked out" from design docs into the Active section
+- Progress notes accumulate under each task
+- Completed tasks are "reconciled" back to design docs
+
+** 3. Org-Mode Configuration
+
+Shared =org-setup.org= with:
+- TODO state workflows
+- Effort estimates
+- Tag taxonomies
+- Archive settings
+
+** 4. Agent Integration
+
+Claude Code slash commands and skills:
+- =/task-queue= - check out a task
+- =/task-complete= - reconcile a completed task
+- =/task-start= - begin work with context gathering
+- =backlog-update= skill - reminder to update before commits
+
+* Principles
+
+** Design Docs as Source of Truth
+
+Tasks exist because of design decisions. The design doc is canonical;
+the backlog is ephemeral. When a task is completed, the design doc
+is updated and the backlog entry is removed.
+
+** Working Surface Pattern
+
+The backlog is a "scratch space" for active work:
+- Agents can read/write freely without touching canonical docs
+- Progress notes accumulate during work
+- Reconciliation happens at completion
+
+** Atomic Operations
+
+Task state changes and code changes can be committed together.
+No separate API calls that might fail or desync.
+
+** Plain Text Everything
+
+All state is in plain text files tracked in git:
+- Full history of task evolution
+- Easy to grep, parse, transform
+- Works offline, no services required
+
+* Comparison
+
+** vs GitHub Issues
+
+| Aspect              | GitHub Issues   | dev-agent-backlog     |
+|---------------------+-----------------+-----------------------|
+| Agent efficiency    | API calls, auth | Direct file access    |
+| Context             | Sparse, linked  | Inline in design docs |
+| Atomic commits      | No              | Yes                   |
+| External visibility | Excellent       | Requires repo access  |
+| PR integration      | Native          | Manual                |
+
+Best for: small teams, agent-heavy workflows, design-driven development.
+
+** vs Jira/Linear
+
+| Aspect        | Jira/Linear           | dev-agent-backlog         |
+|---------------+-----------------------+---------------------------|
+| Overhead      | High (web UI, fields) | Low (text files)          |
+| Customization | Limited               | Unlimited (it's org-mode) |
+| Agent access  | Complex APIs          | File read/write           |
+| Cost          | Paid tiers            | Free                      |
+
+Best for: teams that value simplicity and agent integration over enterprise features.
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** DONE [DAB-001-01] Create initial system structure                    :p0:
+CLOSED: [2026-01-04]
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Create directory structure, org-setup.org, design docs.
+
+* Questions
+:PROPERTIES:
+:CATEGORY: questions
+:END:
+
+** DECIDED Should design docs or backlog be the source of truth?
+:PROPERTIES:
+:DECIDED: [2026-01-04]
+:END:
+
+Design docs are the source of truth. The backlog is a working surface
+that gets reconciled back to design docs on completion.
+
+Rationale: Tasks exist because of design decisions. The decision context
+should stay with the task definition.

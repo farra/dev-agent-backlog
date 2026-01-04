@@ -1,0 +1,184 @@
+#+TITLE: 004 - Agent Integration
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Accepted
+#+CREATED: [2026-01-04]
+#+LAST_MODIFIED: [2026-01-04]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+Claude Code slash commands and skills automate the backlog workflow,
+making it easy for both humans and agents to manage tasks consistently.
+
+* Motivation
+
+The backlog workflow involves repetitive steps:
+- Finding tasks by ID across multiple files
+- Formatting org-mode entries correctly
+- Remembering to update before commits
+- Following the checkout/reconcile pattern
+
+Automation reduces friction and ensures consistency.
+
+* Design
+
+** Slash Commands
+
+Explicit actions invoked with =/command=:
+
+*** /task-queue <task-id>
+
+Check out a task from design doc to backlog:
+
+1. Find task in =docs/design/*.org= by ID
+2. Extract heading, effort, source location
+3. Add to =backlog.org= under =** Active=
+4. Include =:SOURCE:= link
+
+*** /task-complete <task-id> [version]
+
+Reconcile completed task back to design doc:
+
+1. Find task in =backlog.org= Active section
+2. Follow =:SOURCE:= to design doc
+3. Mark =DONE= with =CLOSED:= timestamp
+4. Add =:VERSION:= if provided
+5. Remove from backlog
+
+*** /task-hold <task-id> <reason>
+
+Move task to blocked:
+
+1. Find task in Active section
+2. Move to =** Blocked= section
+3. Add =:REASON:= property
+
+*** /task-start <task-id>
+
+Begin work on a task:
+
+1. If not in backlog, run /task-queue first
+2. Read task context from =:SOURCE:=
+3. Read related design doc sections
+4. Prepare implementation plan
+5. Present plan for review
+
+** Skills
+
+Proactive behaviors triggered by context:
+
+*** backlog-update
+
+Triggers before commits or after significant work:
+
+1. Read =backlog.org= Active section
+2. Find tasks related to current work
+3. Prompt to add progress notes
+4. Suggest /task-complete or /task-hold if appropriate
+5. Then proceed with commit
+
+*** after-feature (project-specific)
+
+Quality gate for feature completion. Adapt checklist to your project's
+needs (tests, docs, examples, etc.).
+
+** File Structure
+
+#+begin_example
+.claude/
+├── commands/
+│   ├── task-queue.md
+│   ├── task-complete.md
+│   ├── task-hold.md
+│   └── task-start.md
+└── skills/
+    └── backlog-update/
+        └── SKILL.md
+#+end_example
+
+** Command Format
+
+Slash commands are markdown files with YAML frontmatter:
+
+#+begin_example
+---
+description: Short description for discovery
+argument-hint: <required> [optional]
+---
+
+# Command Name
+
+Instructions for Claude to follow.
+
+## Process
+
+1. Step one
+2. Step two
+
+## Files
+
+- @backlog.org
+- @docs/design/
+#+end_example
+
+** Skill Format
+
+Skills follow the agent-skills spec:
+
+#+begin_example
+---
+name: skill-name
+description: When Claude should use this skill. Include trigger
+  words and conditions for proactive activation.
+---
+
+# Skill Name
+
+## When to Offer This Workflow
+
+Trigger conditions...
+
+## Workflow
+
+Steps to follow...
+#+end_example
+
+* Decision
+
+Implement slash commands for explicit actions and skills for proactive
+behaviors. Commands handle the mechanical workflow; skills add
+awareness of when to use them.
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** DONE [DAB-004-01] Create slash command templates                     :p0:
+CLOSED: [2026-01-04]
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Create task-queue, task-complete, task-hold, task-start commands.
+
+** DONE [DAB-004-02] Create backlog-update skill                        :p0:
+CLOSED: [2026-01-04]
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Skill to remind agent to update backlog before commits.
+
+* Questions
+:PROPERTIES:
+:CATEGORY: questions
+:END:
+
+** DECIDED How eager should backlog-update skill be?
+:PROPERTIES:
+:DECIDED: [2026-01-04]
+:END:
+
+Start with triggers for: before commits, after plan mode, "done"/"wrap up".
+If too chatty, narrow to commits only. Easy to adjust in SKILL.md description.

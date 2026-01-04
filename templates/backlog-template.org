@@ -1,0 +1,59 @@
+#+TITLE: Project Backlog
+#+SETUPFILE: ./org-setup.org
+
+* Current WIP
+
+Active tasks checked out from design docs.
+
+** Active
+# Queue tasks here with /task-queue or M-x dab-task-queue
+
+** Blocked
+# Tasks waiting on external dependency
+
+** Up Next
+# Prioritized queue for next sprint
+
+* Version Milestones
+
+Quick links to version-specific work:
+
+# - [[file:docs/design/XXX-milestone.org][XXX - Milestone Name]] - description
+
+* About This File
+
+This is the *working surface* for development.
+
+*Design docs* (=docs/design/*.org=) are the canonical archive.
+*This file* is where active work gets tracked.
+
+** Workflow
+
+1. *Checkout*: Copy task to Active with =:SOURCE:= link
+2. *Work*: Add progress notes under the task
+3. *Reconcile*: Update design doc, remove from here
+
+** Task Format
+
+#+begin_example
+*** TODO [PROJECT-NNN-XX] Task title
+:PROPERTIES:
+:SOURCE: [[file:docs/design/NNN-doc.org::*Tasks][NNN Tasks]]
+:EFFORT: M
+:END:
+
+[YYYY-MM-DD] Progress notes here.
+#+end_example
+
+* Setup
+
+See org-setup.org for shared configuration.
+
+* Quick Reference
+
+| Task State | Meaning             |
+|------------+---------------------|
+| TODO       | Not started         |
+| WIP        | Work in progress    |
+| HOLD       | Blocked or deferred |
+| DONE       | Completed           |

@@ -1,0 +1,37 @@
+#+TITLE: Design Documents
+#+SETUPFILE: ../../org-setup.org
+
+* Overview
+
+This directory contains design documents for the dev-agent-backlog system.
+
+Design docs follow an RFC/RFD pattern: each document captures a decision,
+its rationale, and any implementation tasks.
+
+* Document Status
+
+| Status       | Meaning                      |
+|--------------+------------------------------|
+| Draft        | Under development            |
+| Discussion   | Ready for review             |
+| Accepted     | Approved, ready to implement |
+| Implementing | Implementation in progress   |
+| Complete     | Implemented and verified     |
+| Abandoned    | Stopped, not viable          |
+
+* Documents
+
+** Core System
+
+| Doc | Title                    | Status   |
+|-----+--------------------------+----------|
+| 001 | [[file:001-system-overview.org][System Overview]]          | Accepted |
+| 002 | [[file:002-design-docs.org][Design Doc Pattern]]       | Accepted |
+| 003 | [[file:003-backlog-workflow.org][Backlog Workflow]]         | Accepted |
+| 004 | [[file:004-agent-integration.org][Agent Integration]]        | Accepted |
+
+** Templates
+
+| Doc | Title               | Purpose                    |
+|-----+---------------------+----------------------------|
+| 000 | [[file:000-template.org][Design Doc Template]] | Starting point for new docs |
