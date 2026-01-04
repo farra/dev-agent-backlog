@@ -16,12 +16,27 @@ Look for the task in backlog.org under `* Current WIP` > `** Active`.
 - If found: proceed to step 2
 - If NOT found: run `/task-queue $ARGUMENTS` first to add it
 
-### 2. Read Task Context
+### 2. Read Task Context and Handoff
 
 From the task entry in backlog.org:
 - Read any existing progress notes
+- Check `:HANDOFF:` property for notes from previous session
 - Follow the `:SOURCE:` link to the canonical location
 - Read the full task description and related context
+
+**If `:HANDOFF:` has content, display prominently:**
+
+```
+## Resuming [$ARGUMENTS]
+
+**Handoff from last session:**
+> <handoff notes here>
+```
+
+### 2a. Update Attribution
+
+- Change task state from TODO to WIP
+- Add `claude-code` to `:WORKED_BY:` if not already present
 
 ### 3. Gather Related Context
 

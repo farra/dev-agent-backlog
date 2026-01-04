@@ -27,10 +27,15 @@ Queue task **$ARGUMENTS** into the backlog.org Active section.
 :PROPERTIES:
 :SOURCE: [[file:docs/design/NNN-doc.org::*heading][TASK-ID in doc.org]]
 :EFFORT: <from source>
+:HANDOFF:
+:WORKED_BY:
 :END:
 
 <brief description>
 ```
+
+   - `:HANDOFF:` starts empty (populated during work)
+   - `:WORKED_BY:` starts empty (updated by /task-start)
 
 4. **Confirm** by showing the new entry
 

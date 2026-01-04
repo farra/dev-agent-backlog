@@ -45,15 +45,34 @@ Previous notes...
 
 After adding notes, consider:
 
-- **Still in progress?** Leave as TODO, notes are sufficient
+- **Still in progress?** Leave as TODO/WIP, notes are sufficient
 - **Blocked?** Suggest running `/task-hold <id> <reason>`
 - **Complete?** Suggest running `/task-complete <id> [version]`
 
 Do NOT mark complete automatically - that's an explicit user action via `/task-complete`.
 
-### 4. Then Commit
+### 4. Check CHANGELOG.md
 
-Only after backlog.org is updated, proceed with the commit.
+If significant user-facing changes were made:
+
+- Read `CHANGELOG.md` if it exists
+- Check if the change is already documented under `## [Unreleased]`
+- If not, suggest adding an entry:
+  - **Added** - New features
+  - **Changed** - Changes to existing functionality
+  - **Fixed** - Bug fixes
+  - **Removed** - Removed features
+
+### 5. Update Handoff Notes
+
+If stopping work mid-task:
+
+- Update `:HANDOFF:` property with context for next session
+- Include: what was tried, where stuck, what to try next
+
+### 6. Then Commit
+
+Only after backlog.org and CHANGELOG.md are updated, proceed with the commit.
 
 ## Related Commands
 

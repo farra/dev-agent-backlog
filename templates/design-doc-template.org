@@ -43,6 +43,18 @@ Implementation tasks with IDs in format =[PROJECT-NNN-XX]=.
 
 Description of the task.
 
+** DONE [PROJECT-NNN-02] Example completed task                          :p1:
+CLOSED: [YYYY-MM-DD]
+:PROPERTIES:
+:EFFORT: S
+:VERSION: v1.0
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code, human
+:TRANSCRIPT: [[file:~/.claude/projects/.../conversation.md]]
+:END:
+
+Example of completed task format with attribution.
+
 * Questions
 :PROPERTIES:
 :CATEGORY: questions

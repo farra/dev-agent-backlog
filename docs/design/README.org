@@ -29,6 +29,8 @@ its rationale, and any implementation tasks.
 | 002 | [[file:002-design-docs.org][Design Doc Pattern]]       | Accepted |
 | 003 | [[file:003-backlog-workflow.org][Backlog Workflow]]         | Accepted |
 | 004 | [[file:004-agent-integration.org][Agent Integration]]        | Accepted |
+| 005 | [[file:005-gastown-features.org][Gastown-Inspired Features]] | Accepted |
+| 006 | [[file:006-changelog.org][Changelog Workflow]]       | Accepted |
 
 ** Templates
 

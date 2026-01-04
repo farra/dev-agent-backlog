@@ -1,0 +1,160 @@
+#+TITLE: 005 - Gastown-Inspired Features
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Accepted
+#+CREATED: [2026-01-04]
+#+LAST_MODIFIED: [2026-01-04]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+Adopt key patterns from [[https://github.com/steveyegge/gastown][gastown]] (a multi-agent orchestration system) to improve
+session continuity, work attribution, and automatic task resumption. These
+features make dev-agent-backlog more effective for agent workflows.
+
+* Motivation
+
+Current limitations:
+- No structured handoff between sessions (progress notes are freeform)
+- No attribution tracking (who worked on what)
+- Manual task resumption (agent must be told to continue)
+- No link to conversation transcripts
+
+Gastown solves these with hooks, entity CVs, and structured handoff protocols.
+We can adapt these patterns to our simpler file-based system.
+
+* Design
+
+** Handoff Notes
+
+Add explicit =:HANDOFF:= property to backlog entries:
+
+#+begin_example
+*** WIP [DAB-005-01] Implement handoff notes
+:PROPERTIES:
+:SOURCE: [[file:...]]
+:HANDOFF: Stuck on lifetime issue in foo.rs:142. Try Arc<Mutex<>>
+:WORKED_BY: claude-code
+:END:
+#+end_example
+
+The =/task-start= command reads and prominently displays handoff notes:
+
+#+begin_example
+## Resuming [DAB-005-01]
+
+**Handoff from last session:**
+> Stuck on lifetime issue in foo.rs:142. Try Arc<Mutex<>>
+
+**Work Description:**
+...
+#+end_example
+
+Handoff notes accumulate (kept for history, not cleared).
+
+** Work Attribution
+
+Track who worked on and completed tasks:
+
+- =:WORKED_BY:= - Comma-separated list of contributors (claude-code, human)
+- =:COMPLETED_BY:= - Who marked it done (claude-code | human)
+- =:TRANSCRIPT:= - Link to Claude conversation transcript
+
+Values are simple: =claude-code= or =human=. No model-specific tracking.
+
+On task completion, properties are copied from backlog to source doc:
+
+#+begin_example
+** DONE [DAB-005-01] Implement handoff notes
+CLOSED: [2026-01-04]
+:PROPERTIES:
+:EFFORT: M
+:VERSION: v1.0
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code, human
+:TRANSCRIPT: [[file:~/.claude/projects/.../conversation.md]]
+:END:
+#+end_example
+
+** Auto-Resume Skill (Hook Pattern)
+
+New =backlog-resume= skill triggers on session start:
+
+1. Check =backlog.org= for WIP tasks
+2. If found, display task heading and =:HANDOFF:= notes
+3. Offer: "Continue working on [TASK-ID]?"
+
+This implements gastown's "propulsion principle" - if there's work on your hook,
+you should run it.
+
+** Transcript Linking
+
+On =/task-complete=, auto-detect transcript from =~/.claude/projects/= and add
+=:TRANSCRIPT:= property. Enables "what happened in that session?" queries.
+
+* Decision
+
+Implement all four features:
+1. =:HANDOFF:= property with accumulating notes
+2. =:WORKED_BY:= / =:COMPLETED_BY:= attribution
+3. =backlog-resume= skill for auto-resume
+4. =:TRANSCRIPT:= linking on completion
+
+Keep attribution simple (claude-code | human) rather than tracking specific
+models or agent identities.
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** TODO [DAB-005-01] Add HANDOFF property to task format                   :p0:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Update templates and task-queue command to include =:HANDOFF:= property.
+
+** TODO [DAB-005-02] Update task-start to display handoff                  :p0:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Read =:HANDOFF:= property and display prominently before work description.
+Update =:WORKED_BY:= to include current agent.
+
+** TODO [DAB-005-03] Add attribution to task-complete                      :p0:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Prompt for =:COMPLETED_BY:=, copy =:WORKED_BY:= to source doc, add =:TRANSCRIPT:=
+link from =~/.claude/projects/=.
+
+** TODO [DAB-005-04] Create backlog-resume skill                           :p1:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+New skill that triggers on session start, checks for WIP tasks, surfaces
+handoff notes, and offers to continue.
+
+* Questions
+:PROPERTIES:
+:CATEGORY: questions
+:END:
+
+** DECIDED Should handoff notes be cleared after reading?
+:PROPERTIES:
+:DECIDED: [2026-01-04]
+:END:
+
+Keep for history. Notes accumulate as a context trail across sessions.
+Clearing would lose valuable debugging context.
+
+** DECIDED What values for WORKED_BY and COMPLETED_BY?
+:PROPERTIES:
+:DECIDED: [2026-01-04]
+:END:
+
+Simple =claude-code | human= values. Model-specific tracking (claude-opus-4,
+etc.) adds complexity without clear benefit for this use case.

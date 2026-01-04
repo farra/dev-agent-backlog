@@ -1,0 +1,128 @@
+#+TITLE: 006 - Changelog Workflow
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Accepted
+#+CREATED: [2026-01-04]
+#+LAST_MODIFIED: [2026-01-04]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+Add a CHANGELOG.md file following keepachangelog.com format and integrate
+changelog updates into the task completion workflow.
+
+* Motivation
+
+Projects need a human-readable history of changes. Design docs capture the
+"why" but not the "what changed when" from a user's perspective. A changelog:
+
+- Communicates changes to users
+- Provides release notes foundation
+- Creates accountability for shipped work
+- Complements git history with curated summaries
+
+* Design
+
+** CHANGELOG.md Format
+
+Follow [[https://keepachangelog.com/en/1.1.0/][Keep a Changelog]] format:
+
+#+begin_example
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [Unreleased]
+
+### Added
+- New feature description
+
+### Changed
+- Modified behavior description
+
+### Fixed
+- Bug fix description
+
+### Removed
+- Removed feature description
+
+## [1.0.0] - 2026-01-04
+
+### Added
+- Initial release features
+#+end_example
+
+** Integration with Task Workflow
+
+The =/task-complete= command should remind to update CHANGELOG.md:
+
+1. After marking task DONE
+2. Before final confirmation
+3. Prompt: "Update CHANGELOG.md with this change? (Added/Changed/Fixed/Removed)"
+
+The =backlog-update= skill should also check CHANGELOG.md before commits.
+
+** Categories
+
+| Category | Use for                                    |
+|----------+--------------------------------------------|
+| Added    | New features                               |
+| Changed  | Changes in existing functionality          |
+| Fixed    | Bug fixes                                  |
+| Removed  | Removed features                           |
+| Security | Security vulnerability fixes (if relevant) |
+
+** Unreleased Section
+
+Work accumulates in =[Unreleased]= until a version is cut. On release:
+
+1. Rename =[Unreleased]= to =[X.Y.Z] - YYYY-MM-DD=
+2. Add new empty =[Unreleased]= section above
+
+* Decision
+
+Adopt keepachangelog format. Integrate changelog updates into:
+- =/task-complete= command (prompt to add entry)
+- =backlog-update= skill (remind before commits)
+
+Keep it lightweight - a reminder, not enforcement.
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** TODO [DAB-006-01] Create CHANGELOG.md                                   :p0:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Create initial CHANGELOG.md with keepachangelog format and Unreleased section.
+
+** TODO [DAB-006-02] Update task-complete for changelog                    :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Add step to prompt for changelog entry after marking task complete.
+
+** TODO [DAB-006-03] Update backlog-update skill for changelog             :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Add changelog check to backlog-update skill workflow.
+
+* Questions
+:PROPERTIES:
+:CATEGORY: questions
+:END:
+
+** DECIDED Should changelog updates be required or suggested?
+:PROPERTIES:
+:DECIDED: [2026-01-04]
+:END:
+
+Suggested, not required. A reminder keeps friction low. Not all task
+completions warrant changelog entries (internal refactors, etc.).

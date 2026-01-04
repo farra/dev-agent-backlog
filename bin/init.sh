@@ -31,6 +31,7 @@ echo "Creating directory structure..."
 mkdir -p "$TARGET/docs/design"
 mkdir -p "$TARGET/.claude/commands"
 mkdir -p "$TARGET/.claude/skills/backlog-update"
+mkdir -p "$TARGET/.claude/skills/backlog-resume"
 mkdir -p "$TARGET/.claude/skills/new-design-doc"
 
 # Copy org-setup.org
@@ -85,6 +86,26 @@ Each document captures a decision, its rationale, and implementation tasks.
 | 900-999 | Proposals/Future   |
 HEREDOC
 
+# Create CHANGELOG.md
+echo "Creating CHANGELOG.md..."
+cat > "$TARGET/CHANGELOG.md" << 'HEREDOC'
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+HEREDOC
+
 # Copy Claude commands
 echo "Copying Claude Code commands..."
 for cmd in task-queue task-complete task-hold task-start new-design-doc; do
@@ -95,7 +116,7 @@ done
 
 # Copy Claude skills
 echo "Copying Claude Code skills..."
-for skill in backlog-update new-design-doc; do
+for skill in backlog-update backlog-resume new-design-doc; do
     if [[ -d "$SCRIPT_DIR/.claude/skills/$skill" ]]; then
         mkdir -p "$TARGET/.claude/skills/$skill"
         for file in "$SCRIPT_DIR/.claude/skills/$skill"/*; do
@@ -110,6 +131,7 @@ echo ""
 echo "Done! Created:"
 echo "  $TARGET/org-setup.org"
 echo "  $TARGET/backlog.org"
+echo "  $TARGET/CHANGELOG.md"
 echo "  $TARGET/docs/design/README.org"
 echo "  $TARGET/docs/design/000-template.org"
 echo "  $TARGET/.claude/commands/"
