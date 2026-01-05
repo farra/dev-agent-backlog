@@ -2,7 +2,11 @@
 #
 # Initialize dev-agent-backlog in a project
 #
-# Usage: ./init.sh [project-prefix] [target-dir]
+# Usage: ./init.sh [options] <project-prefix> [target-dir]
+#
+# Options:
+#   -f, --force    Bypass safety checks and run in a non-empty directory.
+#   -h, --help     Show this help message.
 #
 # Example:
 #   ./init.sh GF ~/dev/gongfu
@@ -11,20 +15,78 @@
 
 set -euo pipefail
 
+usage() {
+    # Print the script's header comments, stopping at the first non-comment line.
+    sed '/^#/!q' "$0" | grep '^#[^!]' | cut -c3-
+    exit 1
+}
+
+FORCE=false
+ARGS=()
+
+# Process flags first
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            usage
+            ;;
+        -f|--force)
+            FORCE=true
+            shift
+            ;;
+        # A '--' signals the end of options
+        --)
+            shift
+            break
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            usage
+            ;;
+        *)
+            ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# --- Configuration ---
+
 # Get the directory where this script lives
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Arguments
-PREFIX="${1:-PROJECT}"
-TARGET="${2:-.}"
+# NEW: Check for mandatory project-prefix
+if [[ ${#ARGS[@]} -eq 0 ]]; then
+    echo "Error: Missing <project-prefix> argument." >&2
+    echo "" >&2
+    usage
+fi
+
+# Positional arguments
+PREFIX="${ARGS[0]}"
+TARGET="${ARGS[1]:-.}"
 
 # Resolve target to absolute path
 TARGET="$(cd "$TARGET" && pwd)"
 
-echo "Initializing dev-agent-backlog..."
-echo "  Project prefix: $PREFIX"
+# --- Pre-flight Checks & User Feedback ---
+
+echo "Initializing dev-agent-backlog with the following settings:"
+echo "  Project prefix:   $PREFIX"
 echo "  Target directory: $TARGET"
 echo ""
+
+# Check if target directory is empty, unless --force is used
+if ! $FORCE && [ -n "$(ls -A "$TARGET" 2>/dev/null)" ]; then
+    echo "Warning: Target directory '$TARGET' is not empty."
+    read -p "    Running this script will copy new directories and files to this directory. Continue? [y/N] " -n 1 -r
+    echo # Move to a new line
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Initialization cancelled."
+        exit 1
+    fi
+    echo "" # Add a blank line for spacing after confirmation
+fi
 
 # Create directory structure
 echo "Creating directory structure..."
