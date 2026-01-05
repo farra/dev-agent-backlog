@@ -1,0 +1,198 @@
+#+TITLE: 007 - Queue Design Doc
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Draft
+#+CREATED: [2026-01-05]
+#+LAST_MODIFIED: [2026-01-05]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+Add a =/queue-design-doc= command that queues all tasks from a design document
+into the backlog Active section, with pre-flight checks to ensure the document
+is ready for implementation.
+
+* Motivation
+
+Currently, queuing tasks requires running =/task-queue= individually for each
+task. For a design doc with 5-10 tasks, this is tedious. More importantly,
+there's no structured check that the design is actually ready:
+
+- Are all questions decided?
+- Have decision comments been addressed?
+- Is the doc status appropriate?
+
+A single command to queue an entire design doc provides:
+1. Convenience (one command instead of many)
+2. Validation (pre-flight checks catch issues early)
+3. Consistency (all tasks use same format)
+
+* Design
+
+** Command Interface
+
+#+begin_example
+/queue-design-doc <identifier>
+#+end_example
+
+Where =<identifier>= can be:
+- A number: =007=, =7=
+- A filename: =007-queue-design-doc.org=, =007-queue-design-doc=
+- A path: =docs/design/007-queue-design-doc.org=
+
+** Pre-flight Checks
+
+Before queuing any tasks, verify the design doc is ready:
+
+*** 1. Document Status Check
+
+Read =#+STATUS:= header. Expected values:
+- =Accepted= - Ready to implement (proceed)
+- =Implementing= - Already in progress (proceed with warning)
+- =Draft= / =Discussion= - Not ready (warn, ask to confirm)
+- =Complete= / =Abandoned= - Invalid (abort)
+
+*** 2. Open Questions Check
+
+Scan =* Questions= section for =** OPEN= headings.
+
+If any found:
+1. List each open question with its context
+2. For each, show any proposed options from the question body
+3. Help user work through each decision
+4. Update doc to mark questions as =DECIDED= with rationale
+5. After all resolved, continue with queue
+
+*** 3. Decision Commentary Check
+
+Scan =* Decision= section (and =* Design=) for:
+- Sub-headings like =*** Comment=, =*** Note=, =*** TODO=
+- Inline markers like =TODO:=, =FIXME:=, =NOTE:=
+
+If found:
+1. Surface each comment/note
+2. Ask: "Address this before proceeding?"
+3. If yes, help resolve and update doc
+4. If no, continue (user accepts as-is)
+
+** Task Discovery
+
+After pre-flight checks pass:
+
+1. Find =* Tasks= section in document
+2. Collect all =** TODO= headings (skip =** DONE=, =** HOLD=)
+3. Extract for each task:
+   - Task ID (e.g., =[DAB-007-01]=)
+   - Title
+   - =:EFFORT:= property
+   - Description (body text)
+
+** Backlog Integration
+
+For each discovered task:
+
+*** New Tasks
+
+If task ID not in =backlog.org=:
+- Add to =** Active= section
+- Use standard format with =:SOURCE:=, =:EFFORT:=, =:HANDOFF:=, =:WORKED_BY:=
+
+*** Existing Tasks
+
+If task ID already in =backlog.org=:
+- Move to =** Active= if in Blocked or Up Next
+- Update =:EFFORT:= if changed in source
+- Preserve existing =:HANDOFF:= and =:WORKED_BY:=
+- Preserve existing progress notes
+
+** Output
+
+After queuing, display summary:
+
+#+begin_example
+## Queued: 007 - Queue Design Doc
+
+**Pre-flight:**
+- Status: Accepted ✓
+- Questions: 2 DECIDED, 0 OPEN ✓
+- Comments: None found ✓
+
+**Tasks queued to Active:**
+- [DAB-007-01] Create queue-design-doc command (NEW)
+- [DAB-007-02] Add pre-flight checks (NEW)
+- [DAB-007-03] Update backlog integration (UPDATED - was in Up Next)
+
+**Skipped:**
+- [DAB-007-04] Already DONE
+#+end_example
+
+** Skill Integration
+
+Consider a =design-doc-ready= skill that triggers when:
+- User says "let's implement this design"
+- User says "queue this doc"
+- Doc status is changed to "Accepted"
+
+The skill would offer to run =/queue-design-doc=.
+
+* Decision
+
+Implement =/queue-design-doc= with:
+- Flexible identifier (number or filename)
+- Three pre-flight checks (status, questions, comments)
+- All tasks to Active section
+- Update existing tasks (move to Active, preserve notes)
+- Summary output showing what was queued
+
+Defer the skill for now - start with the slash command.
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** TODO [DAB-007-01] Create queue-design-doc command                       :p0:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Create =.claude/commands/queue-design-doc.md= with:
+- Flexible identifier parsing (number, filename, path)
+- Task discovery from =* Tasks= section
+- Backlog integration (new and existing tasks)
+
+** TODO [DAB-007-02] Implement pre-flight checks                           :p0:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Add pre-flight validation:
+- Document status check with appropriate warnings
+- Open questions detection and resolution workflow
+- Decision commentary scanning and surfacing
+
+** TODO [DAB-007-03] Update design doc README                              :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Add 007 to =docs/design/README.org= index.
+
+* Questions
+:PROPERTIES:
+:CATEGORY: questions
+:END:
+
+** DECIDED Should we add a :DESIGN_DOC: property to queued tasks?
+:PROPERTIES:
+:DECIDED: [2026-01-05]
+:END:
+
+No. The =:SOURCE:= link already points to the design doc. Adding another
+property is redundant. The design doc number is also embedded in the task ID.
+
+** DECIDED Should there be a companion /unqueue-design-doc command?
+:PROPERTIES:
+:DECIDED: [2026-01-05]
+:END:
+
+Defer until needed. Manual removal is fine for the rare case where plans change.
