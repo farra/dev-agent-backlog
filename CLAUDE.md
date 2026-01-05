@@ -67,6 +67,7 @@ Design Doc (canonical)          Backlog (working surface)
 - `/task-complete <id> [version]` - Mark done with attribution, prompt for changelog entry
 - `/task-hold <id> <reason>` - Move task to Blocked section
 - `/new-design-doc <title> [source.md]` - Create new design doc (or convert markdown)
+- `/queue-design-doc <doc>` - Queue all tasks from a design doc with pre-flight checks
 
 ## Skills
 

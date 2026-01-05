@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- `/queue-design-doc` command to queue all tasks from a design document with pre-flight checks
+
 ## [1.0.1] - 2026-01-04
 
 ### Added

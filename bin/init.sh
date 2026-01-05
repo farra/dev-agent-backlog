@@ -108,7 +108,7 @@ HEREDOC
 
 # Copy Claude commands
 echo "Copying Claude Code commands..."
-for cmd in task-queue task-complete task-hold task-start new-design-doc; do
+for cmd in task-queue task-complete task-hold task-start new-design-doc queue-design-doc; do
     if [[ -f "$SCRIPT_DIR/.claude/commands/$cmd.md" ]]; then
         sed "s/PROJECT/$PREFIX/g" "$SCRIPT_DIR/.claude/commands/$cmd.md" > "$TARGET/.claude/commands/$cmd.md"
     fi

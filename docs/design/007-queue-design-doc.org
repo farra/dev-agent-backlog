@@ -1,6 +1,6 @@
 #+TITLE: 007 - Queue Design Doc
 #+AUTHOR: dev-agent-backlog
-#+STATUS: Draft
+#+STATUS: Accepted
 #+CREATED: [2026-01-05]
 #+LAST_MODIFIED: [2026-01-05]
 #+SETUPFILE: ../../org-setup.org
@@ -150,9 +150,12 @@ Defer the skill for now - start with the slash command.
 :CATEGORY: tasks
 :END:
 
-** TODO [DAB-007-01] Create queue-design-doc command                       :p0:
+** DONE [DAB-007-01] Create queue-design-doc command                       :p0:
+CLOSED: [2026-01-05]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Create =.claude/commands/queue-design-doc.md= with:
@@ -160,9 +163,12 @@ Create =.claude/commands/queue-design-doc.md= with:
 - Task discovery from =* Tasks= section
 - Backlog integration (new and existing tasks)
 
-** TODO [DAB-007-02] Implement pre-flight checks                           :p0:
+** DONE [DAB-007-02] Implement pre-flight checks                           :p0:
+CLOSED: [2026-01-05]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Add pre-flight validation:
@@ -170,9 +176,12 @@ Add pre-flight validation:
 - Open questions detection and resolution workflow
 - Decision commentary scanning and surfacing
 
-** TODO [DAB-007-03] Update design doc README                              :p2:
+** DONE [DAB-007-03] Update design doc README                              :p2:
+CLOSED: [2026-01-05]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Add 007 to =docs/design/README.org= index.

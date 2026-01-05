@@ -31,7 +31,7 @@ its rationale, and any implementation tasks.
 | 004 | [[file:004-agent-integration.org][Agent Integration]]        | Accepted |
 | 005 | [[file:005-gastown-features.org][Gastown-Inspired Features]] | Accepted |
 | 006 | [[file:006-changelog.org][Changelog Workflow]]       | Accepted |
-| 007 | [[file:007-queue-design-doc.org][Queue Design Doc]]         | Draft    |
+| 007 | [[file:007-queue-design-doc.org][Queue Design Doc]]         | Complete |
 
 ** Templates
 
