@@ -1,0 +1,462 @@
+#+TITLE: 008 - Compound Engineering Patterns
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Draft
+#+CREATED: [2026-01-05]
+#+LAST_MODIFIED: [2026-01-05]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+This document explores how dev-agent-backlog could adopt patterns from
+[[https://github.com/every-io/compound-engineering-plugin][compound-engineering-plugin]], a Claude Code plugin developed by Every, Inc. based
+on their [[https://every.to/chain-of-thought/compound-engineering-how-every-codes-with-agents][Compound Engineering]] methodology. The two systems are complementary
+rather than competing—they solve different problems in the agent-assisted
+development workflow.
+
+* Context: Two Philosophies
+
+** Compound Engineering
+
+Every's approach inverts traditional engineering economics. As they put it:
+"each unit of engineering work should make subsequent units easier—not harder."
+The core insight is that with agents writing 100% of the code, the bottleneck
+shifts from scarce engineering talent to:
+
+1. *Orchestrating agents effectively* (planning, directing research)
+2. *Capturing institutional knowledge* (documenting solutions for reuse)
+3. *Quality gates* (multi-agent review before merge)
+
+Their workflow: =Plan → Work → Review → Compound=
+
+The "compound" step is key—after solving a problem, you document it in a
+searchable format so future agents (and humans) can find and reuse the solution.
+This creates positive compounding: each bug fixed, each pattern discovered,
+feeds back into the system.
+
+** dev-agent-backlog
+
+Our approach treats *design documents as the source of truth*. Tasks exist
+because of design decisions, not the other way around. The insight is that
+traditional task trackers (Jira, GitHub Issues) are optimized for human-to-human
+coordination, not human-agent collaboration.
+
+Our workflow: =Design → Checkout → Work → Reconcile=
+
+The emphasis is on grounding work in decisions. Before you build, you decide
+what to build and why. The backlog is an ephemeral working surface; design docs
+are the permanent record.
+
+** Why They're Complementary
+
+These systems address different phases and concerns:
+
+| Concern                  | Compound Engineering          | dev-agent-backlog              |
+|--------------------------+-------------------------------+--------------------------------|
+| "What should we build?"  | Implementation plan           | Design doc with rationale      |
+| "How do we track work?"  | TodoList during =/work=       | backlog.org checkout/reconcile |
+| "How do we ensure quality?" | Multi-agent parallel review | (gap - manual review)          |
+| "How do we capture learnings?" | Solution docs with YAML   | Questions section, decisions   |
+| "How do we resume work?" | (gap)                         | :HANDOFF: + auto-resume        |
+| "Who did the work?"      | (gap)                         | :WORKED_BY:, :COMPLETED_BY:    |
+
+Notice the gaps are complementary. Compound Engineering excels at research,
+review, and knowledge capture. dev-agent-backlog excels at decision grounding,
+session continuity, and attribution. A synthesis could offer both.
+
+* Motivation
+
+Compound Engineering has features we lack:
+
+1. *Multi-agent review*: Their =/workflows:review= runs 13+ specialized agents
+   in parallel (security, performance, architecture, data integrity, etc.). We
+   have no equivalent—review is manual or ad-hoc.
+
+2. *Research agents in planning*: Their =/workflows:plan= spawns three research
+   agents in parallel before creating a plan. Our =/task-start= gathers context
+   but doesn't do deep research.
+
+3. *Solution documentation*: Their =/workflows:compound= creates searchable
+   solution docs with YAML frontmatter. We capture decisions in design docs but
+   don't have a structured "lessons learned" repository.
+
+4. *Git worktree integration*: They have a skill for isolated workspaces with
+   automatic .env copying. Useful for parallel work and isolated review.
+
+Meanwhile, we have features they lack:
+
+1. *Session continuity*: Our =:HANDOFF:= property and =backlog-resume= skill
+   enable seamless session handoffs. They have no equivalent.
+
+2. *Work attribution*: Our =:WORKED_BY:= and =:COMPLETED_BY:= properties track
+   who (human or agent) contributed. Enables audit trails.
+
+3. *Pre-flight validation*: Our =/queue-design-doc= checks for open questions
+   and unresolved decision comments before implementation begins.
+
+4. *Design grounding*: Our RFC/RFD pattern ensures work is grounded in
+   explicit decisions with rationale, not just "implement this feature."
+
+* Design
+
+** Feature 1: Multi-Agent Review Command
+
+*** The Pattern
+
+Compound Engineering's =/workflows:review= orchestrates 13+ agents:
+
+- Security Sentinel (security audits)
+- Performance Oracle (performance analysis)
+- Architecture Strategist (architectural compliance)
+- Code Simplicity Reviewer (final simplicity pass)
+- Pattern Recognition Specialist (anti-patterns)
+- Data Integrity Guardian (migrations, data safety)
+- Language-specific reviewers (Rails, Python, TypeScript)
+
+Agents run in parallel. Conditional invocation based on PR content (e.g.,
+migrations trigger the data integrity agent).
+
+*** Adaptation for dev-agent-backlog
+
+We could add =/review= or =/task-review= that:
+
+1. Takes a task ID or file list
+2. Spawns specialized reviewers based on content
+3. Aggregates findings into a structured report
+4. Optionally blocks completion until issues addressed
+
+*** Design Questions
+
+- Do we define agents as separate files (like compound-engineering) or inline
+  in the command? Separate files are more maintainable but add complexity.
+
+- Do we need all 13+ reviewers or a smaller core set? Start small (security,
+  performance, architecture, simplicity) and grow.
+
+- How do we handle conditional invocation? Read file extensions and content
+  to decide which reviewers to spawn.
+
+- Where do review findings go? Add to task progress notes? Separate review doc?
+
+** Feature 2: Research Agents in Planning
+
+*** The Pattern
+
+Compound Engineering's =/workflows:plan= runs three agents in parallel:
+
+- =repo-research-analyst=: Understand codebase structure and conventions
+- =best-practices-researcher=: Find external examples and patterns
+- =framework-docs-researcher=: Pull relevant framework documentation
+
+This front-loads research before implementation planning.
+
+*** Adaptation for dev-agent-backlog
+
+We could enhance =/task-start= or add =/research-task= that:
+
+1. Spawns research agents to gather context
+2. Injects findings into the task context
+3. Makes better-informed implementation plans
+
+Alternatively, integrate research into =/queue-design-doc= pre-flight:
+
+- Before queuing tasks, research the codebase for relevant patterns
+- Surface related code and prior implementations
+- Add research findings to task descriptions
+
+*** Design Questions
+
+- Do we want research at task-start (per-task) or doc-queue (per-design-doc)?
+  Per-design-doc is more efficient; per-task is more targeted.
+
+- How much research is useful vs. noise? Compound Engineering's 80/20 rule
+  (80% planning/review) suggests more research is better.
+
+- Do we persist research findings? Could add to design doc or task notes.
+
+** Feature 3: Solution Documentation (Compound Docs)
+
+*** The Pattern
+
+Compound Engineering's =/workflows:compound= creates solution docs:
+
+#+begin_example
+---
+title: Plugin Versioning Requirements
+category: workflow
+component: compound-engineering
+tags: [versioning, release, checklist]
+severity: process
+date_solved: 2024-11-22
+---
+
+## Problem
+Component counts in README were wrong...
+
+## Solution
+Added verification checklist...
+
+## Prevention
+Pre-commit hook that verifies counts...
+#+end_example
+
+Docs are stored in =docs/solutions/= with categories for discovery.
+
+*** Adaptation for dev-agent-backlog
+
+We could add =/capture-solution= or =/compound= that:
+
+1. Prompts for problem description
+2. Extracts solution from recent work
+3. Generates prevention strategies
+4. Creates structured doc in =docs/solutions/=
+
+This complements design docs (decisions) with solution docs (learnings).
+
+*** Design Questions
+
+- Do we use YAML frontmatter (like compound-engineering) or org-mode properties?
+  Org-mode is more consistent with our system, but YAML is more portable.
+
+- What categories? Start with: =workflow=, =database=, =performance=, =security=,
+  =architecture=, =debugging=, =tooling=.
+
+- How do we prevent duplicates? Search existing docs before creating new ones.
+
+- When do we prompt for capture? After =/task-complete=? As a skill trigger?
+
+** Feature 4: Git Worktree Integration
+
+*** The Pattern
+
+Compound Engineering's =git-worktree= skill:
+
+- Creates isolated worktrees for parallel development
+- Auto-copies .env files (critical!)
+- Manages .gitignore automatically
+- Supports list, switch, cleanup operations
+
+Used by =/workflows:review= for isolated review and =/workflows:work= for
+parallel task execution.
+
+*** Adaptation for dev-agent-backlog
+
+We could add a =git-worktree= skill that:
+
+1. Creates worktree for a task (=worktrees/DAB-008-01/=)
+2. Copies environment files automatically
+3. Cleans up on task completion
+
+Enables working on multiple tasks in parallel without branch switching.
+
+*** Design Questions
+
+- Is this commonly needed? Depends on workflow. Parallel work is powerful but
+  adds complexity.
+
+- How do we integrate with backlog? Track which tasks have worktrees?
+
+- What about cleanup? Auto-cleanup on =/task-complete= or manual?
+
+** Feature 5: Plan Enhancement
+
+*** The Pattern
+
+Compound Engineering's =/deepen-plan= enhances existing plans:
+
+- Takes a plan document
+- For each section, spawns parallel research agents
+- Adds context, examples, and edge cases
+- Produces enriched plan
+
+*** Adaptation for dev-agent-backlog
+
+We could add =/deepen-design= or =/research-design= that:
+
+1. Takes a design doc identifier
+2. For each task, researches implementation approaches
+3. Adds findings to task descriptions or a new "Research" section
+4. Identifies potential blockers and edge cases
+
+*** Design Questions
+
+- When to use? Before =/queue-design-doc= or as a separate step?
+
+- How much enrichment is useful? Risk of information overload.
+
+- Do we modify the design doc or create a separate research doc?
+
+* Decision
+
+Adopt features incrementally, prioritizing high-value, low-complexity additions:
+
+** Phase 1: Solution Documentation
+
+Add =/capture-solution= command and =docs/solutions/= directory. This is
+high-value (knowledge compounds) and low-complexity (single command, no agents).
+
+Use org-mode format for consistency:
+
+#+begin_example
+#+TITLE: Problem Title
+#+CATEGORY: workflow
+#+TAGS: tag1, tag2
+#+SEVERITY: process
+#+DATE_SOLVED: [2026-01-05]
+
+* Problem
+
+Description of what went wrong or was confusing.
+
+* Solution
+
+How it was solved.
+
+* Prevention
+
+How to prevent this in the future.
+
+* Related
+
+- [[file:../design/NNN-doc.org][Related Design Doc]]
+- [[file:other-solution.org][Related Solution]]
+#+end_example
+
+** Phase 2: Multi-Agent Review
+
+Add =/review= command with a small core set of reviewers:
+
+1. Security reviewer
+2. Performance reviewer
+3. Architecture reviewer
+4. Simplicity reviewer
+
+Agents defined as separate files in =.claude/agents/review/=. Conditional
+invocation based on file types. Findings added to task progress notes.
+
+** Phase 3: Research Enhancement
+
+Add research capability to =/task-start=:
+
+1. Spawn =repo-analyst= to find related code
+2. Spawn =docs-researcher= to find relevant documentation
+3. Inject findings into task context
+
+Keep research lightweight to avoid information overload.
+
+** Phase 4: Git Worktree (Deferred)
+
+Evaluate need based on usage patterns. If parallel task work becomes common,
+add worktree skill.
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** TODO [DAB-008-01] Create solution docs directory and template            :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Create =docs/solutions/= directory with README.org explaining the pattern.
+Create =docs/solutions/000-template.org= for solution doc format.
+
+** TODO [DAB-008-02] Create /capture-solution command                       :p1:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Command to capture solved problems as structured documentation.
+Prompt for problem, solution, prevention. Check for duplicates.
+Store in =docs/solutions/= with category subdirectories.
+
+** TODO [DAB-008-03] Add solution-capture skill                             :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Skill that triggers after =/task-complete= or when user says "I finally
+figured it out", "that was tricky", etc. Offers to capture the solution.
+
+** TODO [DAB-008-04] Design review agents architecture                      :p1:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Define how review agents work in dev-agent-backlog:
+- File format and location (=.claude/agents/review/=)
+- Agent invocation pattern (Task tool with subagent)
+- Conditional invocation logic
+- Output format and aggregation
+
+** TODO [DAB-008-05] Create core review agents                              :p1:
+:PROPERTIES:
+:EFFORT: L
+:END:
+
+Create initial set of review agents:
+- security-reviewer
+- performance-reviewer
+- architecture-reviewer
+- simplicity-reviewer
+
+** TODO [DAB-008-06] Create /review command                                 :p1:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Command to run review agents on a task or file list.
+Spawn agents in parallel, aggregate findings, add to task notes.
+
+** TODO [DAB-008-07] Add research to /task-start                            :p2:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Enhance =/task-start= to optionally spawn research agents:
+- Find related code in the repo
+- Find relevant documentation
+- Inject findings into task context
+
+* Questions
+:PROPERTIES:
+:CATEGORY: questions
+:END:
+
+** OPEN Should we use org-mode or YAML frontmatter for solution docs?
+
+Org-mode is consistent with our system and works well with Emacs. YAML is
+more portable and matches compound-engineering's approach.
+
+Options:
+- Org-mode with properties (consistent with design docs)
+- YAML frontmatter in markdown (portable, matches compound-engineering)
+- Org-mode with YAML block (hybrid—org file with YAML metadata)
+
+** OPEN How should review agents be defined?
+
+Options:
+- Inline in the =/review= command (simple but not reusable)
+- Separate files in =.claude/agents/= (compound-engineering approach)
+- As skills with agent-like behavior
+
+** OPEN Should research be automatic or opt-in?
+
+Automatic research on every =/task-start= could be noisy. Opt-in (=/task-start
+--research= or separate =/research-task=) gives control but adds friction.
+
+Options:
+- Always research (compound-engineering's 80/20 philosophy)
+- Opt-in with flag (=/task-start --research=)
+- Separate command (=/research-task=)
+- Skill that offers research ("Want me to research this first?")
+
+** OPEN What's the right scope for solution docs?
+
+Compound-engineering captures everything—bugs, patterns, learnings. Should we
+be more selective?
+
+Options:
+- Capture liberally (more knowledge compounds)
+- Capture selectively (only significant learnings)
+- Let the skill/command prompt guide what's worth capturing

@@ -32,6 +32,7 @@ its rationale, and any implementation tasks.
 | 005 | [[file:005-gastown-features.org][Gastown-Inspired Features]] | Accepted |
 | 006 | [[file:006-changelog.org][Changelog Workflow]]       | Accepted |
 | 007 | [[file:007-queue-design-doc.org][Queue Design Doc]]         | Complete |
+| 008 | [[file:008-compound-engineering-patterns.org][Compound Engineering Patterns]] | Draft |
 
 ** Templates
 
