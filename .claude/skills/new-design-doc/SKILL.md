@@ -38,7 +38,7 @@ For conversion:
 
 Ask:
 - What's the one-sentence summary?
-- What category? (Core, Feature, Infra, Tooling, Proposal)
+- What category? (core, feature, infra, analysis, proposal)
 - Any specific options already being considered?
 - (If converting) Which markdown file should I convert?
 
@@ -62,6 +62,8 @@ Ask:
 ### 3. Use Org-Mode Properly
 
 Remind yourself:
+- Documents are numbered sequentially (001, 002, ...) - check existing docs for next number
+- Add `#+CATEGORY:` to frontmatter (core, feature, infra, analysis, proposal)
 - Use `** TODO [PROJECT-NNN-XX] Task title` (not markdown checkboxes)
 - Use `** OPEN Question` / `** DECIDED Question` (not plain text)
 - Add `:PROPERTIES:` for EFFORT, VERSION, DECIDED date

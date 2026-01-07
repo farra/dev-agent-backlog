@@ -1,6 +1,7 @@
 #+TITLE: NNN - Title
 #+AUTHOR: Author Name
 #+STATUS: Draft
+#+CATEGORY: core | feature | infra | analysis | proposal
 #+CREATED: [YYYY-MM-DD]
 #+LAST_MODIFIED: [YYYY-MM-DD]
 #+SETUPFILE: ../../org-setup.org

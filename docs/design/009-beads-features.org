@@ -1,0 +1,231 @@
+#+TITLE: 009 - Beads-Inspired Features
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Draft
+#+CREATED: [2026-01-05]
+#+LAST_MODIFIED: [2026-01-05]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+Analysis of patterns from [[https://github.com/steveyegge/beads][beads]] (a distributed, git-backed graph
+issue tracker) that could enhance dev-agent-backlog. This builds on
+[[file:005-gastown-features.org][005 - Gastown-Inspired Features]] which addressed session continuity and
+attribution.
+
+* Motivation
+
+Beads is a mature issue tracker (~109k LOC) designed for AI agent workflows.
+While dev-agent-backlog intentionally stays lightweight (org-mode scaffolding
+vs production database), some beads patterns could add value without
+compromising simplicity:
+
+| Beads Feature       | Their Approach            | Our Gap                          |
+|---------------------+---------------------------+----------------------------------|
+| Ready work query    | =bd ready= with deps      | Manual filtering by status       |
+| Collision-safe IDs  | Hash-based (=bd-a1b2=)    | Sequential (collision possible)  |
+| Task dependencies   | Rich graph semantics      | Implicit via tree/numbering      |
+| Time scheduling     | =defer_until=, =due_at=   | Not supported                    |
+| Soft delete         | Tombstone with TTL        | Hard delete only                 |
+
+* Design
+
+** Ready Work Filtering
+
+Beads' =bd ready= returns tasks with no open blockers. This is their core
+agent workflow primitive.
+
+*** Option A: Leverage org-mode dependencies
+
+Org-mode has built-in dependency support:
+
+#+begin_src org
+# In org-setup.org
+,#+PROPERTY: ORDERED t  ; siblings complete in sequence
+
+# Or per-task with org-depend.el
+,** TODO [DAB-009-01] First task
+:PROPERTIES:
+:BLOCKER: DAB-005-02
+:END:
+#+end_src
+
+Pros: Native org-mode, no new tooling
+Cons: Requires org-depend.el, complex property management
+
+*** Option B: Convention-based readiness
+
+Define "ready" as:
+- Status is =TODO= (not =WIP=, =HOLD=, =DONE=)
+- Priority is =p0= or =p1=
+- No =BLOCKED_BY= property set
+
+Implement as a grep/awk script or skill that scans backlog.org:
+
+#+begin_example
+$ ./bin/ready.sh
+DAB-005-01  Add HANDOFF property (p0, S)
+DAB-006-02  Update changelog format (p1, M)
+#+end_example
+
+Pros: Simple, no org-mode extensions needed
+Cons: Less powerful than true dependency graph
+
+*** Option C: Defer to agent judgment
+
+Keep current approach: agent reads backlog, uses context to determine what's
+ready. Works because we're single-agent, not distributed teams.
+
+Pros: Zero implementation cost
+Cons: No explicit "what can I work on next?" query
+
+** Hash-Based Task IDs
+
+Beads uses hash-derived IDs (=bd-a1b2=) to prevent collisions when multiple
+agents create issues concurrently across branches.
+
+*** Analysis
+
+Our current format: =[PROJECT-NNN-XX]= where:
+- =NNN= = design doc number (assigned at doc creation)
+- =XX= = sequential task within doc
+
+Collision scenarios:
+1. Two agents adding tasks to same design doc simultaneously
+2. Branch merges with conflicting task numbers
+
+Mitigation without changing ID format:
+- Tasks only created via =/task-queue= which reads existing IDs first
+- Single-agent workflow makes concurrent creation rare
+
+Recommendation: Keep current IDs. Hash-based IDs hurt human readability
+(=bd-a1b2= vs =DAB-005-01=) and our collision risk is low.
+
+** Time-Based Scheduling
+
+Beads supports:
+- =due_at= - deadline for task completion
+- =defer_until= - hide from ready queue until date
+
+*** Option A: Use org-mode scheduling
+
+#+begin_src org
+,** TODO [DAB-009-01] Implement feature
+SCHEDULED: <2026-01-15>
+DEADLINE: <2026-01-20>
+#+end_src
+
+Org-mode natively supports =SCHEDULED= and =DEADLINE=. Agenda views filter
+by these. Could integrate with =backlog-resume= skill.
+
+*** Option B: Custom properties
+
+#+begin_src org
+,** TODO [DAB-009-01] Implement feature
+:PROPERTIES:
+:DEFER_UNTIL: [2026-01-15]
+:DUE: [2026-01-20]
+:END:
+#+end_src
+
+Pros: Explicit, doesn't conflict with org agenda
+Cons: Duplicates org-mode functionality
+
+Recommendation: Use native =SCHEDULED=/=DEADLINE= if needed. Don't reinvent.
+
+** Soft Delete (Tombstone)
+
+Beads marks deleted issues as =tombstone= with 30-day TTL before permanent
+removal. Useful for "oops" recovery and audit trails.
+
+*** Analysis
+
+In dev-agent-backlog, tasks live in design docs (source of truth). Deletion
+means:
+- Removing from backlog.org (working surface) - reversible via git
+- Marking =CANCELLED= in design doc - preserves history
+
+Recommendation: Add =CANCELLED= state to TODO progression:
+
+#+begin_example
+TODO → WIP → HOLD | DONE | CANCELLED
+#+end_example
+
+No TTL needed; git history provides audit trail.
+
+** Dependency Types
+
+Beads has rich semantics: =blocks=, =parent-child=, =related=,
+=discovered-from=, =conditional-blocks=.
+
+*** Analysis
+
+Useful for our context:
+- =discovered-from= - "While working on X, found we need Y"
+  Could implement as =:DISCOVERED_FROM: DAB-005-01= property
+- =blocks= - Hard dependency, affects readiness
+
+Less useful (single-agent context):
+- =conditional-blocks= - Complex orchestration
+- =related= - Soft link, low value vs effort
+
+* Decision
+
+Deferred pending discussion. Options to consider:
+
+1. *Minimal*: Add =CANCELLED= state only
+2. *Convention-based ready*: Script to filter ready tasks (Option B above)
+3. *Org-native scheduling*: Document =SCHEDULED=/=DEADLINE= usage
+4. *Discovered-from tracking*: =:DISCOVERED_FROM:= property for cascading tasks
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** TODO [DAB-009-01] Add CANCELLED state to org-setup.org                  :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Add =CANCELLED= to TODO state progression for soft-delete semantics.
+
+** TODO [DAB-009-02] Document SCHEDULED/DEADLINE usage                     :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Add guidance to CLAUDE.md on using org-mode native scheduling.
+
+** TODO [DAB-009-03] Evaluate ready-work script                            :p2:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Prototype =bin/ready.sh= that lists actionable tasks from backlog.org.
+Assess whether this adds value over agent judgment.
+
+** TODO [DAB-009-04] Consider DISCOVERED_FROM property                     :p3:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Evaluate adding =:DISCOVERED_FROM:= to track cascading task discovery.
+
+* Questions
+:PROPERTIES:
+:CATEGORY: questions
+:END:
+
+** OPEN Is explicit dependency tracking worth the complexity?
+
+Beads has a full graph model. We could use org-depend.el or a simple
+=BLOCKED_BY= property. But our single-agent workflow may not need it.
+
+Factors:
+- How often do we have blocked tasks?
+- Would =bd ready= equivalent change agent behavior?
+
+** OPEN Should backlog-resume show only "ready" tasks?
+
+Currently shows all WIP tasks. Could filter to only unblocked items.
+Requires defining what "blocked" means in our context.

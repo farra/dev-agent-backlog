@@ -53,12 +53,14 @@ Design Doc (canonical)          Backlog (working surface)
 
 ### Document Numbering
 
-- 001-099: Core system
-- 100-199: Features
-- 200-299: Infrastructure
-- 300-399: Tooling
-- 800-899: Analysis/Research
-- 900-999: Proposals/Future
+Documents are numbered sequentially (001, 002, ...). Use `#+CATEGORY:` in the
+document frontmatter to classify documents:
+
+- `core` - Core system behavior
+- `feature` - New functionality
+- `infra` - Infrastructure/tooling
+- `analysis` - Research and analysis
+- `proposal` - Future proposals
 
 ## Slash Commands
 

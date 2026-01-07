@@ -33,6 +33,7 @@ its rationale, and any implementation tasks.
 | 006 | [[file:006-changelog.org][Changelog Workflow]]       | Accepted |
 | 007 | [[file:007-queue-design-doc.org][Queue Design Doc]]         | Complete |
 | 008 | [[file:008-compound-engineering-patterns.org][Compound Engineering Patterns]] | Draft |
+| 009 | [[file:009-beads-features.org][Beads-Inspired Features]]  | Draft    |
 
 ** Templates
 
