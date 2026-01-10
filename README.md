@@ -231,15 +231,20 @@ Completed tasks in design docs also include:
 
 ## Document Numbering
 
-| Range   | Category          |
-|---------|-------------------|
-| 000     | Template          |
-| 001-099 | Core system       |
-| 100-199 | Features          |
-| 200-299 | Infrastructure    |
-| 300-399 | Tooling           |
-| 800-899 | Analysis/Research |
-| 900-999 | Proposals/Future  |
+Documents are numbered sequentially (001, 002, 003...). Use `#+CATEGORY:` in
+the document header to classify documents. Valid categories are defined in
+`README.org`:
+
+| Category | Description |
+|----------|-------------|
+| feature  | Core product functionality |
+| infra    | Infrastructure, tooling, CI/CD |
+| research | Research, analysis, spikes |
+| hygiene  | Tech debt, chores, maintenance |
+| incident | Bugs, outages, RCAs |
+| security | Audits, vulnerabilities, hardening |
+| data     | Storage, pipelines, metrics |
+| bs       | Brainstorms, speculative ideas |
 
 ## Comparison with Other Systems
 

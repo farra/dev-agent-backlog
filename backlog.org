@@ -7,6 +7,106 @@ Active tasks checked out from design docs.
 
 ** Active
 
+*** TODO [PROJECT-010-01] Update /new-design-doc command                  :p1:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-01 in 010-design-doc-metadata.org]]
+:EFFORT: S
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+Remove number ranges table, read categories from README.org.
+
+*** TODO [PROJECT-010-02] Update template with CATEGORY field             :p1:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-02 in 010-design-doc-metadata.org]]
+:EFFORT: S
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+Ensure 000-template.org has #+CATEGORY: in header.
+
+*** TODO [PROJECT-010-03] Backfill CATEGORY on existing docs              :p2:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-03 in 010-design-doc-metadata.org]]
+:EFFORT: S
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+Add #+CATEGORY: to docs 001-009.
+
+*** TODO [PROJECT-010-04] Update CLAUDE.md if needed                      :p2:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-04 in 010-design-doc-metadata.org]]
+:EFFORT: S
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+Verify CLAUDE.md describes category system correctly.
+
+*** TODO [PROJECT-010-05] Create README.org with config data              :p1:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-05 in 010-design-doc-metadata.org]]
+:EFFORT: S
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+Create README.org with project prefix, categories, statuses.
+
+*** TODO [PROJECT-010-06] Update README.md                                :p2:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-06 in 010-design-doc-metadata.org]]
+:EFFORT: S
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+Remove number ranges table from README.md.
+
+*** TODO [PROJECT-010-07] Update /task-queue to set doc status to Active  :p1:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-07 in 010-design-doc-metadata.org]]
+:EFFORT: S
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+Set #+STATUS: Active when queuing tasks.
+
+*** TODO [PROJECT-010-08] Update /queue-design-doc to set status to Active :p1:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-08 in 010-design-doc-metadata.org]]
+:EFFORT: S
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+Set #+STATUS: Active when queuing all tasks from a doc.
+
+*** TODO [PROJECT-010-09] Update /task-complete to check for doc completion :p1:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-09 in 010-design-doc-metadata.org]]
+:EFFORT: S
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+Check if all tasks DONE and prompt to mark doc Complete.
+
+*** TODO [PROJECT-010-10] Create /design-review command                   :p1:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-10 in 010-design-doc-metadata.org]]
+:EFFORT: M
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+New command to guide Draft → Review → Accepted flow.
+
 ** Blocked
 
 ** Up Next
@@ -141,14 +241,14 @@ Progress notes here.
 
 * Quick Reference
 
-| Status       | Meaning                      |
-|--------------+------------------------------|
-| Draft        | Under development            |
-| Discussion   | Ready for review             |
-| Accepted     | Approved, ready to implement |
-| Implementing | Implementation in progress   |
-| Complete     | Implemented and verified     |
-| Abandoned    | Stopped, not viable          |
+| Status   | Meaning                              |
+|----------+--------------------------------------|
+| Draft    | Under development, not ready         |
+| Review   | Ready for feedback                   |
+| Accepted | Approved, ready to implement         |
+| Active   | Implementation in progress           |
+| Complete | Fully implemented and verified       |
+| Archived | No longer active (rejected/obsolete) |
 
 | Task State | Meaning             |
 |------------+---------------------|

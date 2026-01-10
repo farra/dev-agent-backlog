@@ -33,7 +33,15 @@ Mark task **$1** as DONE and reconcile with source document.
    - Ask: "Add to CHANGELOG.md? (Added/Changed/Fixed/Removed/Skip)"
    - If not Skip, add entry under `## [Unreleased]` in appropriate section
 
-6. **Confirm** the reconciliation
+6. **Check for document completion**:
+   - Scan the source design doc's `* Tasks` section
+   - Count remaining `** TODO` and `** WIP` entries
+   - If zero remaining (all are `** DONE`):
+     - Prompt: "All tasks in this design doc are complete. Mark document as Complete?"
+     - If yes: set `#+STATUS: Complete` in design doc
+     - Update `docs/design/README.org` index
+
+7. **Confirm** the reconciliation
 
 ## Example
 

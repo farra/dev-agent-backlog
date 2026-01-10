@@ -1,6 +1,7 @@
 #+TITLE: 009 - Beads-Inspired Features
 #+AUTHOR: dev-agent-backlog
 #+STATUS: Draft
+#+CATEGORY: research
 #+CREATED: [2026-01-05]
 #+LAST_MODIFIED: [2026-01-05]
 #+SETUPFILE: ../../org-setup.org

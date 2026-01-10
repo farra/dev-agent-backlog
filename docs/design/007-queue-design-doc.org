@@ -1,6 +1,7 @@
 #+TITLE: 007 - Queue Design Doc
 #+AUTHOR: dev-agent-backlog
 #+STATUS: Accepted
+#+CATEGORY: infra
 #+CREATED: [2026-01-05]
 #+LAST_MODIFIED: [2026-01-05]
 #+SETUPFILE: ../../org-setup.org

@@ -1,6 +1,7 @@
 #+TITLE: 003 - Backlog Workflow
 #+AUTHOR: dev-agent-backlog
 #+STATUS: Accepted
+#+CATEGORY: infra
 #+CREATED: [2026-01-04]
 #+LAST_MODIFIED: [2026-01-04]
 #+SETUPFILE: ../../org-setup.org

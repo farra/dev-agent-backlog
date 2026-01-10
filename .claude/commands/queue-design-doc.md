@@ -27,14 +27,14 @@ Before queuing tasks, validate the document is ready:
 
 Read `#+STATUS:` header:
 
-| Status | Action |
-|--------|--------|
-| Accepted | Proceed |
-| Implementing | Proceed with note "already in progress" |
-| Draft | Warn: "Document is still Draft. Queue anyway?" |
-| Discussion | Warn: "Document is in Discussion. Queue anyway?" |
+| Status   | Action |
+|----------|--------|
+| Accepted | Proceed, will set to Active |
+| Active   | Proceed with note "already in progress" |
+| Draft    | Warn: "Document is still Draft. Queue anyway?" |
+| Review   | Warn: "Document is in Review. Queue anyway?" |
 | Complete | Abort: "Document already Complete, no tasks to queue" |
-| Abandoned | Abort: "Document was Abandoned" |
+| Archived | Abort: "Document was Archived" |
 
 #### 2b. Open Questions Check
 
@@ -99,7 +99,14 @@ Add to `** Active` section:
 - Preserve existing `:HANDOFF:` and `:WORKED_BY:`
 - Preserve existing progress notes
 
-### 5. Summary Output
+### 5. Update Document Status
+
+After queuing tasks:
+- If `#+STATUS:` was `Accepted` (or `Draft`/`Review` and user confirmed), set to `Active`
+- Update `docs/design/README.org` index to reflect new status
+- Work has begun on this design doc
+
+### 6. Summary Output
 
 Display results:
 

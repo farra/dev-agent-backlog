@@ -54,13 +54,17 @@ Design Doc (canonical)          Backlog (working surface)
 ### Document Numbering
 
 Documents are numbered sequentially (001, 002, ...). Use `#+CATEGORY:` in the
-document frontmatter to classify documents:
+document frontmatter to classify documents. Valid categories are defined in
+`README.org`:
 
-- `core` - Core system behavior
-- `feature` - New functionality
-- `infra` - Infrastructure/tooling
-- `analysis` - Research and analysis
-- `proposal` - Future proposals
+- `feature` - Core product functionality
+- `infra` - Infrastructure, tooling, CI/CD
+- `research` - Research, analysis, spikes
+- `hygiene` - Tech debt, chores, maintenance
+- `incident` - Bugs, outages, RCAs
+- `security` - Audits, vulnerabilities, hardening
+- `data` - Storage, pipelines, metrics
+- `bs` - Brainstorms, speculative ideas
 
 ## Slash Commands
 

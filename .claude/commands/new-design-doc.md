@@ -24,19 +24,23 @@ Examples:
 Look at existing files in `docs/design/` to find the next available NNN:
 - List files matching `[0-9][0-9][0-9]-*.org`
 - Find the highest number
-- Use the next number (or suggest based on category)
+- Use the next sequential number (no gaps, no category-based ranges)
 
-Number ranges:
-| Range   | Category           |
-|---------|-------------------|
-| 001-099 | Core system       |
-| 100-199 | Features          |
-| 200-299 | Infrastructure    |
-| 300-399 | Tooling           |
-| 800-899 | Analysis/Research |
-| 900-999 | Proposals/Future  |
+### 2. Determine Category
 
-### 2. Create the Document
+Read valid categories from `README.org` (the `* Document Categories` table).
+
+Ask the user which category applies, or infer from context:
+- `feature` - Core product functionality
+- `infra` - Infrastructure, tooling, CI/CD
+- `research` - Research, analysis, spikes
+- `hygiene` - Tech debt, chores, maintenance
+- `incident` - Bugs, outages, RCAs
+- `security` - Audits, vulnerabilities, hardening
+- `data` - Storage, pipelines, metrics
+- `bs` - Brainstorms, speculative ideas
+
+### 3. Create the Document
 
 **If no source_path** (new from template):
 - Copy from `docs/design/000-template.org`
@@ -51,11 +55,12 @@ Fill in header:
 - `#+TITLE:` - NNN - <title>
 - `#+AUTHOR:` - Your Name (or prompt for author)
 - `#+STATUS:` - Draft
+- `#+CATEGORY:` - From step 2
 - `#+CREATED:` - Today's date [YYYY-MM-DD]
 - `#+LAST_MODIFIED:` - Today's date
 - `#+SETUPFILE: ../../org-setup.org`
 
-### 3. Assign Task IDs
+### 4. Assign Task IDs
 
 For **new documents**: Use placeholder pattern `[PROJECT-NNN-01]`, `[PROJECT-NNN-02]`, etc.
 
@@ -65,19 +70,18 @@ For **converted documents**:
 - Assign sequential IDs starting at 01
 - Preserve the task description text
 
-### 4. Update README.org Index
+### 5. Update README.org Index
 
 If `docs/design/README.org` exists:
-- Find the appropriate section based on number range
-- Add a new row to the table: `| NNN | [[file:NNN-slug.org][Title]] | Draft |`
+- Add a new row to the documents table: `| NNN | [[file:NNN-slug.org][Title]] | Draft |`
 
-### 5. Offer to Queue Tasks
+### 6. Offer to Queue Tasks
 
 After conversion, offer to queue extracted tasks to `backlog.org`:
 - List the tasks found with their new IDs
 - Ask if user wants to queue any/all to Active section
 
-### 6. Report
+### 7. Report
 
 Output:
 - Path to new file

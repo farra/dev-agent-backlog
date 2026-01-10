@@ -37,7 +37,13 @@ Queue task **$ARGUMENTS** into the backlog.org Active section.
    - `:HANDOFF:` starts empty (populated during work)
    - `:WORKED_BY:` starts empty (updated by /task-start)
 
-4. **Confirm** by showing the new entry
+4. **Update source doc status**:
+   - Read the source design doc's `#+STATUS:` header
+   - If status is `Accepted`, change to `Active` (work has begun)
+   - If status is `Draft` or `Review`, leave as-is (task can still be queued)
+   - Update `docs/design/README.org` index if status changed
+
+5. **Confirm** by showing the new entry
 
 ## Files
 

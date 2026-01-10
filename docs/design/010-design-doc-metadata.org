@@ -1,0 +1,231 @@
+#+TITLE: 010 - Design Doc Categories and Status Fields
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Active
+#+CATEGORY: infra
+#+CREATED: [2026-01-09]
+#+LAST_MODIFIED: [2026-01-09]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+Define the standard metadata fields for design documents: sequential numbering
+with a =#+CATEGORY:= field for classification, and =#+STATUS:= to track document
+lifecycle. This replaces the previous approach of using number ranges to imply
+category.
+
+* Motivation
+
+The original design used number ranges to categorize documents (001-099 for
+core, 100-199 for features, etc.). This approach had problems:
+
+- Required remembering arbitrary range boundaries
+- Created artificial gaps in numbering
+- Made it unclear what number to use next
+- Category wasn't explicit in the document itself
+
+Sequential numbering with explicit =#+CATEGORY:= is simpler and clearer.
+
+* Design
+
+** Document Numbering
+
+Documents are numbered sequentially: 001, 002, 003, etc.
+
+To create a new document:
+1. Find the highest existing number in =docs/design/=
+2. Use the next number
+3. No gaps, no category-based ranges
+
+** Category Field
+
+Add =#+CATEGORY:= to the document frontmatter:
+
+#+begin_src org
+#+TITLE: 010 - Design Doc Categories and Status Fields
+#+CATEGORY: infra
+#+end_src
+
+Valid categories are defined in =README.org= at the project root. Skills and
+commands (like =/new-design-doc=) should read from this file to get the
+current list of acceptable values.
+
+*** Default Categories
+
+| Category   | Use For                                 |
+|------------+-----------------------------------------|
+| =feature=  | Core product functionality              |
+| =infra=    | Infrastructure, tooling, CI/CD          |
+| =research= | Research, analysis, spikes              |
+| =hygiene=  | Tech debt, chores, maintenance          |
+| =incident= | Bugs, outages, RCAs                     |
+| =security= | Audits, vulnerabilities, hardening      |
+| =data=     | Storage, pipelines, metrics             |
+| =bs=       | Brainstorms, speculative ideas          |
+
+*** Category Guidelines
+
+- *feature*: New capabilities, enhancements to existing functionality
+- *infra*: Build systems, deployment, developer tooling, CI/CD
+- *research*: "Should we use X?" investigations, architecture reviews, spikes
+- *hygiene*: Refactoring, dependency updates, cleanup, documentation
+- *incident*: Bug investigations, outage post-mortems, root cause analysis
+- *security*: Security audits, vulnerability remediation, hardening
+- *data*: Database design, data pipelines, analytics, metrics systems
+- *bs*: Early-stage ideas that may or may not pan out (honest labeling)
+
+** Status Field
+
+The =#+STATUS:= field tracks document lifecycle:
+
+| Status     | Meaning                                        |
+|------------+------------------------------------------------|
+| =Draft=    | Under development, not ready for review        |
+| =Review=   | Ready for feedback                             |
+| =Accepted= | Approved, ready to implement                   |
+| =Active=   | Implementation in progress, some tasks complete |
+| =Complete= | Fully implemented and verified                 |
+| =Archived= | No longer active (rejected, obsolete, abandoned) |
+
+** Example Header
+
+#+begin_src org
+#+TITLE: 010 - Design Doc Categories and Status Fields
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Draft
+#+CATEGORY: infra
+#+CREATED: [2026-01-09]
+#+LAST_MODIFIED: [2026-01-09]
+#+SETUPFILE: ../../org-setup.org
+#+end_src
+
+* Decision
+
+Use sequential numbering with explicit =#+CATEGORY:= and =#+STATUS:= fields.
+Remove number range conventions from all documentation and commands.
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** TODO [PROJECT-010-01] Update /new-design-doc command                  :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Remove the number ranges table from =.claude/commands/new-design-doc.md=.
+Replace with:
+- "Use the next sequential number"
+- "Read valid categories from =README.org="
+- "Ask user for =#+CATEGORY:= value (or infer from context)"
+
+** TODO [PROJECT-010-02] Update template with CATEGORY field             :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Ensure =docs/design/000-template.org= has =#+CATEGORY:= in the header and
+shows the valid values as a comment or placeholder.
+
+** TODO [PROJECT-010-03] Backfill CATEGORY on existing docs              :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Add =#+CATEGORY:= to docs 001-009 based on their content:
+- 001-007: infra (system/workflow documentation)
+- 008-009: research (patterns from other systems)
+
+** TODO [PROJECT-010-04] Update CLAUDE.md if needed                      :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Verify CLAUDE.md accurately describes the category system. Update if the
+description is incomplete or references number ranges.
+
+** TODO [PROJECT-010-05] Create README.org with config data              :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Create =README.org= at project root containing:
+- Project prefix
+- Valid categories table (source of truth for skills/scripts)
+- Valid statuses table
+- Any other project-level configuration
+
+Skills and commands should reference this file for valid values.
+
+** TODO [PROJECT-010-06] Update README.md                                :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Remove the number ranges table from =README.md= and reference the new
+sequential numbering with =#+CATEGORY:= approach.
+
+** TODO [PROJECT-010-07] Update /task-queue to set doc status to Active  :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+When queuing a task, if the source design doc has =#+STATUS: Accepted=,
+update it to =#+STATUS: Active=. Work has begun.
+
+** TODO [PROJECT-010-08] Update /queue-design-doc to set status to Active :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+When queuing all tasks from a design doc, set =#+STATUS: Active= on that
+doc (if currently Accepted or Draft).
+
+** TODO [PROJECT-010-09] Update /task-complete to check for doc completion :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+After marking a task DONE, check if all =** TODO= entries in the source
+design doc are now =** DONE=. If so, prompt: "All tasks complete. Mark
+design doc as Complete?" and update =#+STATUS: Complete= if confirmed.
+
+** TODO [PROJECT-010-10] Create /design-review command                   :p1:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+New command: =/design-review <doc>=
+
+Guides Draft → Accepted transition:
+1. Set =#+STATUS: Review=
+2. Walk through =** OPEN= questions with user, mark =** DECIDED= as resolved
+3. When questions complete, review existing tasks and identify gaps
+4. Build out missing tasks with user input
+5. When tasks approved, set =#+STATUS: Accepted=
+
+The Review status acts as a pause point if the process is interrupted.
+
+* Questions
+:PROPERTIES:
+:CATEGORY: questions
+:END:
+
+** DECIDED Should categories be extensible per-project?
+:PROPERTIES:
+:DECIDED: [2026-01-09]
+:END:
+
+Yes. The eight default categories (feature, infra, research, hygiene,
+incident, security, data, bs) cover most software projects. Projects can
+add domain-specific categories as needed, documented in their README.org.
+
+** DECIDED Where should valid categories/statuses be defined?
+:PROPERTIES:
+:DECIDED: [2026-01-09]
+:END:
+
+In =README.org= at the project root. This provides a single source of truth
+that skills and scripts can reference. Org-mode doesn't support validation
+of header keywords like =#+CATEGORY:=, so documentation-based conventions
+are the pragmatic solution.

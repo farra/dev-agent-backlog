@@ -1,57 +1,62 @@
 #+TITLE: NNN - Title
 #+AUTHOR: Author Name
 #+STATUS: Draft
-#+CATEGORY: core | feature | infra | analysis | proposal
+#+CATEGORY: feature | infra | research | hygiene | incident | security | data | bs
 #+CREATED: [YYYY-MM-DD]
 #+LAST_MODIFIED: [YYYY-MM-DD]
 #+SETUPFILE: ../../org-setup.org
+# See README.org for valid category and status values
+# Optional sections: Reference, Risks & Mitigations - delete if not needed
 
 * Summary
 
-One paragraph overview of the proposal.
+One paragraph: WHAT is this and WHY does it matter?
 
-* Motivation
+* Context
 
-Why is this needed? What problem does it solve?
+Background needed to understand the problem. Definitions, status quo, prior art.
 
-* Design
+* Goals and Non-Goals
 
-Detailed design description.
+** Goals
 
-** Option A
+What we're trying to achieve.
 
-Description and tradeoffs.
+Include success criteria: how will we know this worked?
 
-** Option B
+** Non-Goals
 
-Description and tradeoffs.
+What we're explicitly NOT doing (scope control).
+
+* Proposal
+
+** Overview
+
+High-level approach.
+
+** Design
+
+Technical details.
+
+** Alternatives Considered
+
+Other approaches and why rejected.
 
 * Decision
 
-Which option was chosen and why.
+Which proposal was chosen and why. (For docs with multiple proposals.)
 
-* Tasks
-:PROPERTIES:
-:CATEGORY: tasks
-:END:
+* Risks & Mitigations
 
-Implementation tasks with IDs in format =[PROJECT-NNN-XX]=.
+| Risk | Likelihood | Impact | Mitigation |
+|------+------------+--------+------------|
+|      |            |        |            |
 
-** TODO [PROJECT-NNN-01] First task                                     :p1:
-:PROPERTIES:
-:EFFORT: M
-:END:
+* Questions                                                      :questions:
 
-Description of the task.
+** OPEN Example question
 
-* Questions
-:PROPERTIES:
-:CATEGORY: questions
-:END:
-
-** OPEN Question needing resolution
-
-Context and options.
+Options and trade-offs...
 
 ** DECIDED Resolved question
 :PROPERTIES:
@@ -59,3 +64,24 @@ Context and options.
 :END:
 
 Decision and rationale.
+
+* Tasks                                                              :tasks:
+
+** TODO [PROJECT-NNN-01] Example task                                   :p1:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Task description.
+
+* Reference
+
+Technical reference material (optional section).
+
+* References
+
+- [[file:related-doc.org][Related Doc]] - Description
+
+* Changelog
+
+- *YYYY-MM-DD:* Initial draft
