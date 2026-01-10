@@ -19,6 +19,7 @@ This system treats **design documents as the source of truth**. Tasks exist beca
 
 ```
 your-project/
+├── README.org             # Project config (categories, statuses)
 ├── org-setup.org          # Shared org-mode configuration
 ├── backlog.org            # Working surface for active tasks
 ├── CHANGELOG.md           # User-facing change log
@@ -30,12 +31,13 @@ your-project/
 │       └── ...
 └── .claude/
     ├── commands/          # Slash commands
+    │   ├── new-design-doc.md
+    │   ├── design-review.md
+    │   ├── queue-design-doc.md
     │   ├── task-queue.md
     │   ├── task-start.md
     │   ├── task-complete.md
-    │   ├── task-hold.md
-    │   ├── new-design-doc.md
-    │   └── queue-design-doc.md
+    │   └── task-hold.md
     └── skills/
         ├── backlog-update/
         ├── backlog-resume/
@@ -59,12 +61,13 @@ A single `backlog.org` serving as the active working surface:
 ### Agent Integration
 
 Claude Code slash commands:
+- `/new-design-doc <title>` - Create a new design document
+- `/design-review <doc>` - Review doc: resolve questions, finalize tasks, move to Accepted
+- `/queue-design-doc <doc>` - Queue all tasks from a design doc
 - `/task-queue <id>` - Check out a task from design doc to backlog
 - `/task-start <id>` - Begin work with context and handoff notes
 - `/task-complete <id> [version]` - Reconcile completed task with attribution
 - `/task-hold <id> <reason>` - Move task to blocked
-- `/new-design-doc <title>` - Create a new design document
-- `/queue-design-doc <doc>` - Queue all tasks from a design doc
 
 Proactive skills:
 - `backlog-update` - Reminds to update backlog and changelog before commits
@@ -72,6 +75,28 @@ Proactive skills:
 - `new-design-doc` - Suggests creating design docs during architecture discussions
 
 ## The Workflow
+
+### Document Status Lifecycle
+
+```
+Draft → Review → Accepted → Active → Complete
+  │        │         │         │
+  │        │         │         └── /task-complete (when last task done)
+  │        │         └── /queue-design-doc or /task-queue
+  │        └── /design-review (resolve questions, finalize tasks)
+  └── /new-design-doc
+```
+
+| Status   | Meaning                              |
+|----------|--------------------------------------|
+| Draft    | Under development, not ready         |
+| Review   | Ready for feedback                   |
+| Accepted | Approved, ready to implement         |
+| Active   | Implementation in progress           |
+| Complete | Fully implemented and verified       |
+| Archived | No longer active (rejected/obsolete) |
+
+### Task Lifecycle
 
 ```
 Design Doc                    Backlog
@@ -113,6 +138,7 @@ git clone https://github.com/farra/dev-agent-backlog.git
 ```
 
 The init script creates:
+- `README.org` - Project configuration (categories, statuses)
 - `org-setup.org` - Shared org-mode configuration
 - `backlog.org` - Working surface for active tasks
 - `docs/design/README.org` - Design doc index
@@ -193,12 +219,13 @@ The `.claude/` directory contains:
 
 | Command | Description |
 |---------|-------------|
+| `/new-design-doc <title>` | Create a new design document from template |
+| `/design-review <doc>` | Review doc: resolve questions, finalize tasks, move to Accepted |
+| `/queue-design-doc <doc>` | Queue all tasks from a design doc, set status to Active |
 | `/task-queue <id>` | Check out a task from design doc to backlog Active section |
 | `/task-start <id>` | Begin work: gather context, display handoff notes, update attribution |
-| `/task-complete <id> [version]` | Mark done with attribution, prompt for changelog entry |
+| `/task-complete <id> [version]` | Mark done with attribution, check if doc is Complete |
 | `/task-hold <id> <reason>` | Move task to Blocked section with reason |
-| `/new-design-doc <title>` | Create a new design document from template |
-| `/queue-design-doc <doc>` | Queue all tasks from a design doc with pre-flight checks |
 
 ### Skills
 
