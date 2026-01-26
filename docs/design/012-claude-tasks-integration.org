@@ -703,9 +703,12 @@ This makes plan, backlog tasks, and Claude Tasks the same list.
 Allow queuing tasks from GitHub issues:
 =/task-queue --github https://github.com/.../issues/15=
 
-*** TODO [DAB-012-13] Create /task-link command                          :p2:
+*** DONE [DAB-012-13] Create /task-link command                          :p2:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 New command to add links to existing backlog tasks:

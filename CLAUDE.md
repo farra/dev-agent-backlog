@@ -80,6 +80,7 @@ document frontmatter to classify documents. Valid categories are defined in
 - `/task-start <id>` - Begin work: gather context, display handoff notes, update attribution
 - `/task-complete <id> [version]` - Mark done with attribution, prompt for changelog entry
 - `/task-hold <id> <reason>` - Move task to Blocked section
+- `/task-link <id> --github|--claude-task|--bead|--design` - Add link properties to existing task
 - `/new-design-doc <title> [source.md]` - Create new design doc (or convert markdown)
 - `/queue-design-doc <doc>` - Queue all tasks from a design doc with pre-flight checks
 
