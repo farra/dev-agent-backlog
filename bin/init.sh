@@ -108,65 +108,17 @@ sed "s/PROJECT/$PREFIX/g" "$SCRIPT_DIR/templates/backlog-template.org" > "$TARGE
 echo "Creating docs/design/000-template.org..."
 sed "s/PROJECT/$PREFIX/g" "$SCRIPT_DIR/templates/design-doc-template.org" > "$TARGET/docs/design/000-template.org"
 
+# Create README.org (project config with categories/statuses)
+echo "Creating README.org..."
+sed "s/PROJECT/$PREFIX/g" "$SCRIPT_DIR/templates/readme-project.org" > "$TARGET/README.org"
+
 # Create README.org for design docs
 echo "Creating docs/design/README.org..."
-cat > "$TARGET/docs/design/README.org" << 'HEREDOC'
-#+TITLE: Design Documents
-#+SETUPFILE: ../../org-setup.org
-
-* Overview
-
-This directory contains design documents following an RFC/RFD pattern.
-Each document captures a decision, its rationale, and implementation tasks.
-
-* Document Status
-
-| Status       | Meaning                      |
-|--------------+------------------------------|
-| Draft        | Under development            |
-| Discussion   | Ready for review             |
-| Accepted     | Approved, ready to implement |
-| Implementing | Implementation in progress   |
-| Complete     | Implemented and verified     |
-| Abandoned    | Stopped, not viable          |
-
-* Documents
-
-| Doc | Title      | Status |
-|-----+------------+--------|
-| 000 | [[file:000-template.org][Template]]   | N/A    |
-
-* Numbering
-
-| Range   | Category           |
-|---------+--------------------|
-| 001-099 | Core system        |
-| 100-199 | Features           |
-| 200-299 | Infrastructure     |
-| 300-399 | Tooling            |
-| 800-899 | Analysis/Research  |
-| 900-999 | Proposals/Future   |
-HEREDOC
+cp "$SCRIPT_DIR/templates/readme-design.org" "$TARGET/docs/design/README.org"
 
 # Create CHANGELOG.md
 echo "Creating CHANGELOG.md..."
-cat > "$TARGET/CHANGELOG.md" << 'HEREDOC'
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-
-## [Unreleased]
-
-### Added
-
-### Changed
-
-### Fixed
-
-### Removed
-HEREDOC
+cp "$SCRIPT_DIR/templates/changelog-template.md" "$TARGET/CHANGELOG.md"
 
 # Copy Claude commands
 echo "Copying Claude Code commands..."
@@ -191,6 +143,7 @@ done
 
 echo ""
 echo "Done! Created:"
+echo "  $TARGET/README.org"
 echo "  $TARGET/org-setup.org"
 echo "  $TARGET/backlog.org"
 echo "  $TARGET/CHANGELOG.md"
