@@ -6,8 +6,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-01-26
+
+This release transforms dev-agent-backlog from a shell-script-installed template
+into a proper Claude Code plugin with marketplace distribution.
+
 ### Added
+- **Claude Code Plugin**: Install via `/plugin marketplace add farra/dev-agent-backlog`
+- **Marketplace distribution**: This repo is now a Claude Code marketplace
+- **`/backlog:setup` skill**: Interactive project initialization replacing `init.sh`
+- **Plugin README**: Documentation for plugin installation and usage
+- **Namespaced commands**: All commands now prefixed with `backlog:` (e.g., `/backlog:task-queue`)
+- `/design-review` command to guide docs through Draft → Review → Accepted flow
 - `/queue-design-doc` command to queue all tasks from a design document with pre-flight checks
+- Sequential document numbering with `#+CATEGORY:` classification (replaces category ranges)
+- Document status lifecycle: Draft → Review → Accepted → Active → Complete → Archived
+- Research on other coding agents (Codex, Gemini CLI, OpenCode) - methodology is portable
+
+### Changed
+- **Installation method**: Use plugin system instead of `bin/init.sh`
+- Commands migrated from `.claude/commands/` to `plugin/commands/`
+- Skills migrated from `.claude/skills/` to `plugin/skills/`
+- Templates moved to `plugin/templates/`
+- `init.sh` now shows deprecation warning pointing to plugin
+
+### Deprecated
+- `bin/init.sh` - Use `/backlog:setup` skill instead
+
+### Migration
+If upgrading from 1.x:
+1. Install the plugin: `/plugin marketplace add farra/dev-agent-backlog`
+2. Install: `/plugin install backlog@dev-agent-backlog`
+3. Commands are now namespaced: `/task-queue` → `/backlog:task-queue`
+4. Your existing org files and backlog continue to work unchanged
 
 ## [1.0.1] - 2026-01-04
 
