@@ -7,29 +7,31 @@ This file defines project-level configuration that skills and commands reference
 
 Valid values for the =#+CATEGORY:= header field in design documents.
 
-| Category | Description                          |
-|----------+--------------------------------------|
-| feature  | Core product functionality           |
-| infra    | Infrastructure, tooling, CI/CD       |
-| research | Research, analysis, spikes           |
-| hygiene  | Tech debt, chores, maintenance       |
-| incident | Bugs, outages, RCAs                  |
-| security | Audits, vulnerabilities, hardening   |
-| data     | Storage, pipelines, metrics          |
-| bs       | Brainstorms, speculative ideas       |
+| Category     | Description                              |
+|--------------+------------------------------------------|
+| feature      | Core product functionality               |
+| infra        | Infrastructure, tooling, CI/CD           |
+| architecture | System design, strategy, north star docs |
+| research     | Research, analysis, spikes               |
+| hygiene      | Tech debt, chores, maintenance           |
+| incident     | Bugs, outages, RCAs                      |
+| security     | Audits, vulnerabilities, hardening       |
+| data         | Storage, pipelines, metrics              |
+| bs           | Brainstorms, speculative ideas           |
 
 * Document Statuses
 
 Valid values for the =#+STATUS:= header field in design documents.
 
-| Status   | Description                              |
-|----------+------------------------------------------|
-| Draft    | Under development, not ready for review  |
-| Review   | Ready for feedback                       |
-| Accepted | Approved, ready to implement             |
-| Active   | Implementation in progress               |
-| Complete | Fully implemented and verified           |
-| Archived | No longer active (rejected, obsolete)    |
+| Status   | Description                                     |
+|----------+-------------------------------------------------|
+| Draft    | Under development, not ready for review         |
+| Review   | Ready for feedback                              |
+| Accepted | Approved, ready to implement                    |
+| Active   | Implementation in progress                      |
+| Complete | Fully implemented and verified                  |
+| Living   | Ongoing reference, updated as system evolves    |
+| Archived | No longer active (rejected, obsolete)           |
 
 * Task Statuses
 

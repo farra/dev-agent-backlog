@@ -71,7 +71,24 @@ Continue working on this task?
 The Claude Task link (if present) enables cross-session coordination.
 Follow the link to check for any updates from subagents or other sessions.
 
-### 4. If No WIP Tasks
+### 4. Quick Consistency Check
+
+While reviewing backlog.org, perform a lightweight consistency check:
+
+**Stale entries:**
+- If any tasks show `*** DONE` in backlog.org, they should have been removed
+- Suggest: "Found completed task [ID] still in backlog. Remove it?"
+
+**Design doc drift:**
+- For WIP/TODO tasks with `:DESIGN:` links, spot-check the source doc
+- If the source doc shows the task as `** DONE` but backlog shows TODO/WIP:
+  - Suggest removing the stale backlog entry
+- If the design doc `#+STATUS:` is Complete but tasks are still in backlog:
+  - Suggest running `/reconcile-backlog` to clean up
+
+This catches drift early without running a full reconciliation.
+
+### 5. If No WIP Tasks
 
 Check if there are TODO tasks in Active section:
 
@@ -86,7 +103,7 @@ No work in progress. Active queue:
 Start one of these tasks?
 ```
 
-### 5. Handle Response
+### 6. Handle Response
 
 - If user wants to continue: Run `/task-start <task-id>`
 - If user wants different task: Queue or start the requested task

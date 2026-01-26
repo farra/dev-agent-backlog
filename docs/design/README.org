@@ -17,6 +17,7 @@ its rationale, and any implementation tasks.
 | Accepted | Approved, ready to implement                     |
 | Active   | Implementation in progress, some tasks complete  |
 | Complete | Fully implemented and verified                   |
+| Living   | Ongoing reference, updated as system evolves     |
 | Archived | No longer active (rejected, obsolete, abandoned) |
 
 * Documents
@@ -25,19 +26,19 @@ its rationale, and any implementation tasks.
 
 | Doc | Title                    | Status   |
 |-----+--------------------------+----------|
-| 001 | [[file:001-system-overview.org][System Overview]]          | Accepted |
-| 002 | [[file:002-design-docs.org][Design Doc Pattern]]       | Accepted |
-| 003 | [[file:003-backlog-workflow.org][Backlog Workflow]]         | Accepted |
-| 004 | [[file:004-agent-integration.org][Agent Integration]]        | Accepted |
-| 005 | [[file:005-gastown-features.org][Gastown-Inspired Features]] | Accepted |
-| 006 | [[file:006-changelog.org][Changelog Workflow]]       | Accepted |
+| 001 | [[file:001-system-overview.org][System Overview]]          | Complete |
+| 002 | [[file:002-design-docs.org][Design Doc Pattern]]       | Complete |
+| 003 | [[file:003-backlog-workflow.org][Backlog Workflow]]         | Complete |
+| 004 | [[file:004-agent-integration.org][Agent Integration]]        | Complete |
+| 005 | [[file:005-gastown-features.org][Gastown-Inspired Features]] | Complete |
+| 006 | [[file:006-changelog.org][Changelog Workflow]]       | Complete |
 | 007 | [[file:007-queue-design-doc.org][Queue Design Doc]]         | Complete |
 | 008 | [[file:008-compound-engineering-patterns.org][Compound Engineering Patterns]] | Draft |
 | 009 | [[file:009-beads-features.org][Beads-Inspired Features]]  | Draft    |
-| 010 | [[file:010-design-doc-metadata.org][Categories and Status Fields]] | Active |
+| 010 | [[file:010-design-doc-metadata.org][Categories and Status Fields]] | Complete |
 | 011 | [[file:011-plugin-architecture.org][Claude Code Plugin Architecture]] | Active |
 | 012 | [[file:012-claude-tasks-integration.org][Claude Tasks Integration]] | Complete |
-| 013 | [[file:013-reconciliation-commands.org][Reconciliation Commands]] | Draft |
+| 013 | [[file:013-reconciliation-commands.org][Reconciliation Commands]] | Active |
 
 ** Templates
 

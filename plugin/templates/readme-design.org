@@ -15,6 +15,7 @@ Each document captures a decision, its rationale, and implementation tasks.
 | Accepted | Approved, ready to implement                     |
 | Active   | Implementation in progress, some tasks complete  |
 | Complete | Fully implemented and verified                   |
+| Living   | Ongoing reference, updated as system evolves     |
 | Archived | No longer active (rejected, obsolete, abandoned) |
 
 * Documents

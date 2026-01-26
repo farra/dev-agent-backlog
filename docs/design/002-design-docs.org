@@ -1,6 +1,6 @@
 #+TITLE: 002 - Design Doc Pattern
 #+AUTHOR: dev-agent-backlog
-#+STATUS: Accepted
+#+STATUS: Complete
 #+CATEGORY: infra
 #+CREATED: [2026-01-04]
 #+LAST_MODIFIED: [2026-01-04]

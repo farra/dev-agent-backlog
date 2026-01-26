@@ -2,9 +2,9 @@
 
 A task management system for human-agent collaboration, built on two ideas:
 
-1. **backlog.org as universal hub** - Human-readable join table linking to tasks wherever they live. Both humans and agents read the backlog; agents follow links to their native primitives (Claude Tasks, Beads, etc.).
+1. **backlog.org as universal hub** - Human-readable join table linking to tasks wherever they live. Both humans and agents read the backlog; agents follow links to their native primitives (Claude Tasks, Design Documents, GitHub, etc.).
 
-2. **Design docs for agent planning** - RFC/RFD-style org-mode documents where agents think through problems before executing. Context, decisions, and tasks in one place.
+2. **Design docs for agent planning** - RFC/RFD-style org-mode documents where humans and agents think through problems before executing. Context, decisions, and tasks in ONE place.
 
 ## Installation (Claude Code Plugin)
 
@@ -13,7 +13,7 @@ A task management system for human-agent collaboration, built on two ideas:
 /plugin marketplace add farra/dev-agent-backlog
 
 # Install the plugin
-/plugin install backlog@dev-agent-backlog
+/plugin install backlog@dev-agent-backlog --scope project
 ```
 
 Then initialize your project:
@@ -23,6 +23,13 @@ Then initialize your project:
 
 # Or just say: "Set up design docs for this project"
 ```
+
+The setup will:
+1. Ask for your project prefix (e.g., `ACME`)
+2. Create the directory structure
+3. Write template files
+4. Update your CLAUDE.md
+
 
 > **Other Agents**: The design doc methodology works with any AI coding agent that can read/write files. The org-mode templates and workflow are agent-agnostic. We're exploring adapters for [OpenAI Codex](https://github.com/openai/codex), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenCode](https://github.com/anomalyco/opencode). Contributions welcome!
 
@@ -57,7 +64,7 @@ your-project/
         └── ...
 ```
 
-The plugin provides commands and skills - no files installed in your project's `.claude/` directory.
+The plugin provides commands and skills.
 
 ### Design Documents
 
@@ -117,6 +124,32 @@ Draft → Review → Accepted → Active → Complete
 ### Task Lifecycle
 
 ```
+Design Doc                    Backlog
+┌──────────────────┐          ┌──────────────────┐
+│ ** TODO [ID]     │─checkout→│ *** TODO [ID]    │
+│                  │          │ :SOURCE: link    │
+└──────────────────┘          │ progress notes   │
+                              └────────┬─────────┘
+                                       │ work
+                                       ▼
+                              ┌──────────────────┐
+                              │ *** DONE [ID]    │
+                              └────────┬─────────┘
+                                       │ reconcile
+                                       ▼
+┌──────────────────┐          ┌──────────────────┐
+│ ** DONE [ID]     │←─────────│ (removed)        │
+│ :VERSION: v1.0   │          └──────────────────┘
+└──────────────────┘
+```
+
+1. **Queue**: Add task to backlog with link property (`:DESIGN:`, `:GITHUB:`, etc.)
+2. **Work**: Add progress notes, update `:HANDOFF:` for session continuity
+3. **Complete**: Reconcile back to source (design doc, GitHub, etc.) and remove from backlog
+
+backlog.org is a human-readable hub linking to tasks wherever they live.
+
+```
                         backlog.org (hub)
                               │
          ┌────────────┬───────┴───────┬────────────┐
@@ -125,11 +158,6 @@ Draft → Review → Accepted → Active → Complete
     :DESIGN:      :CLAUDE_TASK:  :GITHUB:        :BEAD:
 ```
 
-backlog.org is a human-readable hub linking to tasks wherever they live.
-
-1. **Queue**: Add task to backlog with link property (`:DESIGN:`, `:GITHUB:`, etc.)
-2. **Work**: Add progress notes, update `:HANDOFF:` for session continuity
-3. **Complete**: Reconcile back to source (design doc, GitHub, etc.) and remove from backlog
 
 ## Getting Started
 
@@ -195,16 +223,43 @@ With Emacs:
 
 ## For Emacs Users
 
-Add to your config:
+The `elisp/workflow-commands.el` package provides Emacs commands that complement the Claude Code plugin. Install it once in your Emacs config (not per-project).
+
+### With use-package and :vc (Emacs 29+)
 
 ```elisp
-;; Load the workflow commands
-(add-to-list 'load-path "path/to/your-project/elisp")
-(require 'workflow-commands)
+(use-package workflow-commands
+  :vc (:url "https://github.com/farra/dev-agent-backlog"
+       :lisp-dir "elisp")
+  :after org
+  :bind (:map org-mode-map
+         ("C-c q" . backlog/task-queue)))
+```
 
-;; Optional: bind to a key
+### With straight.el
+
+```elisp
+(straight-use-package
+ '(workflow-commands
+   :type git
+   :host github
+   :repo "farra/dev-agent-backlog"
+   :files ("elisp/*.el")))
+
+(require 'workflow-commands)
 (define-key org-mode-map (kbd "C-c q") #'backlog/task-queue)
 ```
+
+### Available Commands
+
+| Command                        | Description                                  |
+|--------------------------------|----------------------------------------------|
+| `backlog/task-queue`           | Queue task at point into backlog.org         |
+| `backlog/goto-design`          | Jump to design doc via :DESIGN: property     |
+| `backlog/design-next-number`   | Show next available doc number               |
+| `backlog/design-goto-doc`      | Jump to design doc by number                 |
+| `backlog/design-status-report` | Summary of doc statuses                      |
+| `backlog/design-sync-status`   | Update README.org table from actual statuses |
 
 See `backlog.org` Setup section for agenda configuration.
 
@@ -214,32 +269,44 @@ Install the plugin once, use in any project:
 
 ```bash
 /plugin marketplace add farra/dev-agent-backlog
-/plugin install backlog@dev-agent-backlog
+/plugin install backlog@dev-agent-backlog  --scope project
 ```
+
+### Installation Scopes
+
+| Scope             | Recommended? | Notes                                                 |
+|-------------------|--------------|-------------------------------------------------------|
+| `--scope project` | Yes          | Shared with collaborators via `.claude/settings.json` |
+| `--scope local`   | OK           | Just you, just this repo                              |
+| `--scope user`    | No           | Would trigger in every project, even without setup    |
+
+**Why not user scope?** The skills (like `backlog-update`) trigger on common actions
+like commits. Without a `backlog.org` in the project, they'll fail or be confusing.
+Project scope ensures the plugin only activates where it's been set up.
 
 ### Slash Commands
 
-| Command | Description |
-|---------|-------------|
-| `/backlog:setup` | Initialize design doc system in current project |
-| `/backlog:new-design-doc <title>` | Create a new design document from template |
-| `/backlog:design-review <doc>` | Review doc: resolve questions, finalize tasks |
-| `/backlog:queue-design-doc <doc>` | Queue all tasks from a design doc |
-| `/backlog:task-queue <id>` | Check out a task to backlog Active section |
-| `/backlog:task-start <id>` | Begin work with context and handoff notes |
-| `/backlog:task-complete <id> [version]` | Mark done with attribution |
-| `/backlog:task-hold <id> <reason>` | Move task to Blocked section |
-| `/backlog:task-link <id> <flags>` | Add link properties to existing task |
+| Command                                 | Description                                     |
+|-----------------------------------------|-------------------------------------------------|
+| `/backlog:setup`                        | Initialize design doc system in current project |
+| `/backlog:new-design-doc <title>`       | Create a new design document from template      |
+| `/backlog:design-review <doc>`          | Review doc: resolve questions, finalize tasks   |
+| `/backlog:queue-design-doc <doc>`       | Queue all tasks from a design doc               |
+| `/backlog:task-queue <id>`              | Check out a task to backlog Active section      |
+| `/backlog:task-start <id>`              | Begin work with context and handoff notes       |
+| `/backlog:task-complete <id> [version]` | Mark done with attribution                      |
+| `/backlog:task-hold <id> <reason>`      | Move task to Blocked section                    |
+| `/backlog:task-link <id> <flags>`       | Add link properties to existing task            |
 
 ### Skills (Auto-triggered)
 
-| Skill | Trigger | Behavior |
-|-------|---------|----------|
-| `backlog-resume` | Session start | Checks for WIP tasks, surfaces handoff notes |
-| `backlog-update` | Before commits | Reminds to update backlog, changelog, and handoff notes |
-| `claude-tasks-sync` | Using Claude Tasks | Ensures cross-references exist in backlog.org |
-| `new-design-doc` | Architecture discussions | Suggests creating design docs |
-| `setup` | "Set up design docs" | Interactive project initialization |
+| Skill               | Trigger                  | Behavior                                                |
+|---------------------|--------------------------|---------------------------------------------------------|
+| `backlog-resume`    | Session start            | Checks for WIP tasks, surfaces handoff notes            |
+| `backlog-update`    | Before commits           | Reminds to update backlog, changelog, and handoff notes |
+| `claude-tasks-sync` | Using Claude Tasks       | Ensures cross-references exist in backlog.org           |
+| `new-design-doc`    | Architecture discussions | Suggests creating design docs                           |
+| `setup`             | "Set up design docs"     | Interactive project initialization                      |
 
 ### Task Properties
 
@@ -273,39 +340,16 @@ Documents are numbered sequentially (001, 002, 003...). Use `#+CATEGORY:` in
 the document header to classify documents. Valid categories are defined in
 `README.org`:
 
-| Category | Description |
-|----------|-------------|
-| feature  | Core product functionality |
-| infra    | Infrastructure, tooling, CI/CD |
-| research | Research, analysis, spikes |
-| hygiene  | Tech debt, chores, maintenance |
-| incident | Bugs, outages, RCAs |
+| Category | Description                        |
+|----------|------------------------------------|
+| feature  | Core product functionality         |
+| infra    | Infrastructure, tooling, CI/CD     |
+| research | Research, analysis, spikes         |
+| hygiene  | Tech debt, chores, maintenance     |
+| incident | Bugs, outages, RCAs                |
 | security | Audits, vulnerabilities, hardening |
-| data     | Storage, pipelines, metrics |
-| bs       | Brainstorms, speculative ideas |
-
-## Comparison with Other Systems
-
-### vs GitHub Issues
-
-| Aspect              | GitHub Issues   | dev-agent-backlog     |
-|---------------------|-----------------|-----------------------|
-| Agent efficiency    | API calls, auth | Direct file access    |
-| Context             | Sparse, linked  | Inline in design docs |
-| Atomic commits      | No              | Yes                   |
-| External visibility | Excellent       | Requires repo access  |
-
-**Best for**: Small teams, agent-heavy workflows, design-driven development.
-
-### vs Jira/Linear
-
-| Aspect        | Jira/Linear   | dev-agent-backlog |
-|---------------|---------------|-------------------|
-| Overhead      | High (web UI) | Low (text files)  |
-| Customization | Limited       | Unlimited         |
-| Cost          | Paid tiers    | Free              |
-
-**Best for**: Teams that value simplicity and agent integration over enterprise features.
+| data     | Storage, pipelines, metrics        |
+| bs       | Brainstorms, speculative ideas     |
 
 ## Philosophy
 
@@ -313,6 +357,15 @@ the document header to classify documents. Valid categories are defined in
 - **Working surface pattern**: Backlog is ephemeral; design docs are permanent
 - **Atomic operations**: Task state and code versioned together
 - **Plain text everything**: Git history is task history
+- **Agent-agnostic methodology**: The org-mode templates and workflow work with any AI coding agent that can read/write files. The Claude Code plugin adds convenience, but the core system is portable.
+
+## Learn More
+
+The system documents itself using design docs:
+
+- [Design Doc Pattern](docs/design/002-design-docs.org) - How design documents work
+- [Backlog Workflow](docs/design/003-backlog-workflow.org) - The checkout/reconcile workflow
+- [Plugin Architecture](docs/design/011-plugin-architecture.org) - Claude Code integration
 
 ## Prior Art
 
@@ -321,7 +374,7 @@ This system evolved from [dev-agent-work](https://github.com/farra/dev-agent-wor
 - Design docs as canonical source (not standalone task files)
 - Checkout/reconcile workflow (vs direct task editing)
 - Richer org-mode integration (queries, agenda views)
-- Structured slash commands and skills
+- Structured slash commands and skills, claude plugin format
 
 ## License
 

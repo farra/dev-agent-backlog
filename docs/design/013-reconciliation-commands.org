@@ -1,6 +1,6 @@
 #+TITLE: 013 - Reconciliation Commands
 #+AUTHOR: Claude Code
-#+STATUS: Draft
+#+STATUS: Active
 #+CATEGORY: hygiene
 #+CREATED: [2026-01-26]
 #+LAST_MODIFIED: [2026-01-26]
@@ -236,17 +236,21 @@ Leaning toward: Yes with a summary of what was removed.
 
 * Tasks                                                              :tasks:
 
-** TODO [DAB-013-01] Create /reconcile-design-docs command            :p1:
+** DONE [DAB-013-01] Create /reconcile-design-docs command            :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: L
+:COMPLETED_BY: reconciliation
 :END:
 
 Implement the design doc reconciliation command following the process above.
 Include git log search, CHANGELOG.md parsing, and source code pattern matching.
 
-** TODO [DAB-013-02] Create /reconcile-backlog command                :p1:
+** DONE [DAB-013-02] Create /reconcile-backlog command                :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: reconciliation
 :END:
 
 Implement the backlog reconciliation command. Focus on link validation, status

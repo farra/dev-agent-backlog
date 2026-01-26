@@ -1,6 +1,6 @@
 #+TITLE: 005 - Gastown-Inspired Features
 #+AUTHOR: dev-agent-backlog
-#+STATUS: Accepted
+#+STATUS: Complete
 #+CATEGORY: infra
 #+CREATED: [2026-01-04]
 #+LAST_MODIFIED: [2026-01-04]
@@ -108,32 +108,40 @@ models or agent identities.
 :CATEGORY: tasks
 :END:
 
-** TODO [DAB-005-01] Add HANDOFF property to task format                   :p0:
+** DONE [DAB-005-01] Add HANDOFF property to task format                   :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Update templates and task-queue command to include =:HANDOFF:= property.
 
-** TODO [DAB-005-02] Update task-start to display handoff                  :p0:
+** DONE [DAB-005-02] Update task-start to display handoff                  :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Read =:HANDOFF:= property and display prominently before work description.
 Update =:WORKED_BY:= to include current agent.
 
-** TODO [DAB-005-03] Add attribution to task-complete                      :p0:
+** DONE [DAB-005-03] Add attribution to task-complete                      :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: reconciliation
 :END:
 
 Prompt for =:COMPLETED_BY:=, copy =:WORKED_BY:= to source doc, add =:TRANSCRIPT:=
 link from =~/.claude/projects/=.
 
-** TODO [DAB-005-04] Create backlog-resume skill                           :p1:
+** DONE [DAB-005-04] Create backlog-resume skill                           :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: reconciliation
 :END:
 
 New skill that triggers on session start, checks for WIP tasks, surfaces

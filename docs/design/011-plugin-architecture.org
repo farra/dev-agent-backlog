@@ -318,9 +318,11 @@ Copy =templates/= directory into plugin.
 
 Use =claude --plugin-dir ./plugin= to test all commands and skills.
 
-** TODO [DAB-011-07] Write plugin README                                 :p1:
+** DONE [DAB-011-07] Write plugin README                                 :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Document installation and usage for plugin users.
@@ -334,16 +336,20 @@ CLOSED: [2026-01-26]
 
 Decision: This repo becomes a marketplace. See DECIDED questions above.
 
-** TODO [DAB-011-09] Deprecate init.sh                                   :p2:
+** DONE [DAB-011-09] Deprecate init.sh                                   :p2:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Update init.sh to print deprecation warning pointing to plugin.
 
-** TODO [DAB-011-10] Create marketplace.json                             :p0:
+** DONE [DAB-011-10] Create marketplace.json                             :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Add =.claude-plugin/marketplace.json= to repo root listing the backlog plugin.

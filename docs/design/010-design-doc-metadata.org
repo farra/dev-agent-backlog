@@ -1,6 +1,6 @@
 #+TITLE: 010 - Design Doc Categories and Status Fields
 #+AUTHOR: dev-agent-backlog
-#+STATUS: Active
+#+STATUS: Complete
 #+CATEGORY: infra
 #+CREATED: [2026-01-09]
 #+LAST_MODIFIED: [2026-01-09]
@@ -108,9 +108,11 @@ Remove number range conventions from all documentation and commands.
 :CATEGORY: tasks
 :END:
 
-** TODO [PROJECT-010-01] Update /new-design-doc command                  :p1:
+** DONE [PROJECT-010-01] Update /new-design-doc command                  :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Remove the number ranges table from =.claude/commands/new-design-doc.md=.
@@ -119,34 +121,42 @@ Replace with:
 - "Read valid categories from =README.org="
 - "Ask user for =#+CATEGORY:= value (or infer from context)"
 
-** TODO [PROJECT-010-02] Update template with CATEGORY field             :p1:
+** DONE [PROJECT-010-02] Update template with CATEGORY field             :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Ensure =docs/design/000-template.org= has =#+CATEGORY:= in the header and
 shows the valid values as a comment or placeholder.
 
-** TODO [PROJECT-010-03] Backfill CATEGORY on existing docs              :p2:
+** DONE [PROJECT-010-03] Backfill CATEGORY on existing docs              :p2:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Add =#+CATEGORY:= to docs 001-009 based on their content:
 - 001-007: infra (system/workflow documentation)
 - 008-009: research (patterns from other systems)
 
-** TODO [PROJECT-010-04] Update CLAUDE.md if needed                      :p2:
+** DONE [PROJECT-010-04] Update CLAUDE.md if needed                      :p2:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Verify CLAUDE.md accurately describes the category system. Update if the
 description is incomplete or references number ranges.
 
-** TODO [PROJECT-010-05] Create README.org with config data              :p1:
+** DONE [PROJECT-010-05] Create README.org with config data              :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Create =README.org= at project root containing:
@@ -157,42 +167,52 @@ Create =README.org= at project root containing:
 
 Skills and commands should reference this file for valid values.
 
-** TODO [PROJECT-010-06] Update README.md                                :p2:
+** DONE [PROJECT-010-06] Update README.md                                :p2:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Remove the number ranges table from =README.md= and reference the new
 sequential numbering with =#+CATEGORY:= approach.
 
-** TODO [PROJECT-010-07] Update /task-queue to set doc status to Active  :p1:
+** DONE [PROJECT-010-07] Update /task-queue to set doc status to Active  :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 When queuing a task, if the source design doc has =#+STATUS: Accepted=,
 update it to =#+STATUS: Active=. Work has begun.
 
-** TODO [PROJECT-010-08] Update /queue-design-doc to set status to Active :p1:
+** DONE [PROJECT-010-08] Update /queue-design-doc to set status to Active :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 When queuing all tasks from a design doc, set =#+STATUS: Active= on that
 doc (if currently Accepted or Draft).
 
-** TODO [PROJECT-010-09] Update /task-complete to check for doc completion :p1:
+** DONE [PROJECT-010-09] Update /task-complete to check for doc completion :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 After marking a task DONE, check if all =** TODO= entries in the source
 design doc are now =** DONE=. If so, prompt: "All tasks complete. Mark
 design doc as Complete?" and update =#+STATUS: Complete= if confirmed.
 
-** TODO [PROJECT-010-10] Create /design-review command                   :p1:
+** DONE [PROJECT-010-10] Create /design-review command                   :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: reconciliation
 :END:
 
 New command: =/design-review <doc>=

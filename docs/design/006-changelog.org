@@ -1,6 +1,6 @@
 #+TITLE: 006 - Changelog Workflow
 #+AUTHOR: dev-agent-backlog
-#+STATUS: Accepted
+#+STATUS: Complete
 #+CATEGORY: infra
 #+CREATED: [2026-01-04]
 #+LAST_MODIFIED: [2026-01-04]
@@ -94,23 +94,29 @@ Keep it lightweight - a reminder, not enforcement.
 :CATEGORY: tasks
 :END:
 
-** TODO [DAB-006-01] Create CHANGELOG.md                                   :p0:
+** DONE [DAB-006-01] Create CHANGELOG.md                                   :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Create initial CHANGELOG.md with keepachangelog format and Unreleased section.
 
-** TODO [DAB-006-02] Update task-complete for changelog                    :p1:
+** DONE [DAB-006-02] Update task-complete for changelog                    :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Add step to prompt for changelog entry after marking task complete.
 
-** TODO [DAB-006-03] Update backlog-update skill for changelog             :p1:
+** DONE [DAB-006-03] Update backlog-update skill for changelog             :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: reconciliation
 :END:
 
 Add changelog check to backlog-update skill workflow.

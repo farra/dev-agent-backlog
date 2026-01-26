@@ -71,14 +71,27 @@ If significant user-facing changes were made:
   - **Fixed** - Bug fixes
   - **Removed** - Removed features
 
-### 5. Update Handoff Notes
+### 5. Check Design Doc Status
+
+If the work relates to an Active task with a `:DESIGN:` link:
+
+1. Follow the `:DESIGN:` link to the source design doc
+2. Check the `#+STATUS:` of that document
+3. Scan its `* Tasks` section for remaining `** TODO` or `** WIP` entries
+4. If all tasks are `** DONE`:
+   - Prompt: "All tasks in [doc name] are complete. Update `#+STATUS:` to Complete?"
+   - If yes, update the design doc and `docs/design/README.org` index
+
+This catches completed design docs even when `/task-complete` wasn't used formally.
+
+### 7. Update Handoff Notes
 
 If stopping work mid-task:
 
 - Update `:HANDOFF:` property with context for next session
 - Include: what was tried, where stuck, what to try next
 
-### 6. Then Commit
+### 8. Then Commit
 
 Only after backlog.org and CHANGELOG.md are updated, proceed with the commit.
 
