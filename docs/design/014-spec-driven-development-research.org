@@ -1,0 +1,148 @@
+#+TITLE: 014 - Spec-Driven Development Research
+#+AUTHOR: claude-code
+#+STATUS: Complete
+#+CATEGORY: research
+#+CREATED: [2026-01-26]
+#+LAST_MODIFIED: [2026-01-26]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+*Does dev-agent-backlog implement spec-driven development?*
+
+Sorta. We share the core insight - AI agents need structured planning
+documents to work effectively - but we have specific opinions about how
+that structure should work.
+
+* What is Spec-Driven Development?
+
+AWS Kiro popularized the term in 2025. The core idea: instead of "vibe
+coding" (prompt → code → fix → prompt → fix...), you create structured
+specification documents first, then execute against them.
+
+Kiro's approach:
+#+begin_src
+Prompt → requirements.md → design.md → tasks.md → Code
+#+end_src
+
+Three separate files, AI-generated from prompts, executed sequentially.
+
+* Where We Agree
+
+Both systems recognize the same problem:
+
+- Vibe coding breaks down on complex tasks
+- AI agents lose context over long sessions
+- Decisions need to be captured, not just code
+- Tasks should be discrete and trackable
+
+* Where We Differ: Our Opinions
+
+** Opinion 1: Keep design and work tracked together
+
+Kiro separates concerns into three files:
+#+begin_src
+.kiro/specs/feature/
+├── requirements.md    # What
+├── design.md          # How
+└── tasks.md           # Work
+#+end_src
+
+We keep everything in one document:
+#+begin_src org
+,* Motivation          # Why
+,* Design              # How (options, tradeoffs)
+,* Decision            # What we chose
+,* Tasks               # Work
+,* Questions           # Open issues
+#+end_src
+
+*Why:* Tasks exist because of decisions. When an agent picks up a task,
+it should see the reasoning that created it. Separating them means
+context gets lost or requires extra lookups.
+
+** Opinion 2: Standard workflows for design refinement
+
+Kiro generates specs from prompts. The human reviews and approves.
+
+We have explicit workflows for working through design issues:
+
+- ~OPEN~ / ~DECIDED~ states for questions
+- Pre-flight checks before queuing tasks
+- Status progression: Draft → Review → Accepted → Active → Complete
+
+*Why:* Design documents aren't just AI prompts - they're thinking tools.
+The ~* Questions~ section with ~OPEN~ items forces explicit resolution
+before implementation starts. ~/queue-design-doc~ won't proceed until
+open questions are addressed.
+
+** Opinion 3: Backlog is transient; design doc is permanent
+
+Kiro's specs are the working surface. Tasks get checked off in ~tasks.md~.
+
+We separate concerns:
+- *Design doc*: Permanent record of decisions and task definitions
+- *backlog.org*: Transient scratch space for in-flight work
+
+#+begin_src
+Design Doc                    backlog.org (transient)
+┌──────────────────┐          ┌──────────────────┐
+│ ** TODO [ID]     │─checkout→│ *** TODO [ID]    │
+│ (definition)     │          │ :DESIGN: link    │
+└──────────────────┘          │ progress notes   │
+                              │ handoff context  │
+                              └────────┬─────────┘
+                                       │ complete
+                                       ▼
+┌──────────────────┐          ┌──────────────────┐
+│ ** DONE [ID]     │←reconcile│ (removed)        │
+│ :VERSION: v1.0   │          └──────────────────┘
+└──────────────────┘
+#+end_src
+
+*Why:* Progress notes, handoff context, and session-specific details
+clutter design docs. Keep transient state transient. When work completes,
+reconcile back to the design doc and clean up the backlog.
+
+* Comparison Table
+
+| Aspect              | Kiro                        | dev-agent-backlog              |
+|---------------------+-----------------------------+--------------------------------|
+| Spec generation     | AI generates from prompt    | Human authors deliberately     |
+| File structure      | 3 separate files            | Single document                |
+| Context locality    | Tasks reference other files | Tasks inline with decisions    |
+| Working surface     | Specs themselves            | Separate backlog               |
+| Design refinement   | Review/approve flow         | OPEN→DECIDED + pre-flight      |
+| Task completion     | Mark done in tasks.md       | Reconcile back to design doc   |
+| Permanence          | Specs may drift             | Design docs are archive        |
+
+* What Kiro Does Well
+
+- *Low friction start*: AI generates initial specs from prompts
+- *IDE integration*: Built into VS Code fork
+- *EARS notation*: Structured acceptance criteria format
+- *Agent hooks*: Automated triggers on file events
+
+We could adopt:
+- Structured acceptance criteria format in tasks
+- Optional AI scaffolding in ~/new-design-doc~
+
+* Conclusion
+
+Dev-agent-backlog implements the *spirit* of spec-driven development -
+planning before coding, structured documents, trackable tasks - but with
+different opinions about structure:
+
+1. *Context locality*: Design and tasks belong together
+2. *Design refinement*: Explicit workflows for resolving open questions
+3. *Transient vs permanent*: Backlog for WIP, design docs for archive
+
+These aren't just preferences - they reflect a philosophy that design
+documents are thinking tools and permanent records, not just AI prompts.
+
+* Sources
+
+- [[https://kiro.dev/docs/specs/][Kiro Specs Documentation]]
+- [[https://kiro.dev/blog/introducing-kiro/][Introducing Kiro - Official Blog]]
+- [[https://www.infoq.com/news/2025/08/aws-kiro-spec-driven-agent/][Beyond Vibe Coding: Amazon Introduces Kiro - InfoQ]]
+- [[https://thenewstack.io/aws-kiro-testing-an-ai-ide-with-a-spec-driven-approach/][AWS Kiro: Testing an AI IDE - The New Stack]]
