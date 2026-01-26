@@ -679,9 +679,12 @@ CLOSED: [2026-01-26]
 
 When resuming, check for Claude Task links and surface coordination state.
 
-*** TODO [DAB-012-11] Update queue-design-doc for plan mode              :p0:
+*** DONE [DAB-012-11] Update queue-design-doc for plan mode              :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Update =/queue-design-doc= to:
@@ -730,6 +733,7 @@ Investigate Beads format, define =:BEAD:= property convention.
 
 * Changelog
 
+- *2026-01-26:* Completed DAB-012-11 (queue-design-doc plan mode integration)
 - *2026-01-26:* Implemented DAB-012-08, 09, 10 (sync skill, task-start, backlog-resume)
 - *2026-01-26:* Phase 1 complete (SOURCE→DESIGN rename across 24 files)
 - *2026-01-26:* Added composability section with workflow diagrams
