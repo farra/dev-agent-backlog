@@ -257,6 +257,158 @@ When spawning subagents:
 → If :DESIGN: exists, reconcile to design doc
 #+end_example
 
+** Composability: Design Review vs Queue vs Execute
+
+The key principle is composability. Different workflows compose together:
+
+#+begin_example
+┌─────────────────────────────────────────────────────────────────────┐
+│ /design-review doc                                                  │
+│                                                                     │
+│ Purpose: Resolve unknowns, get doc ready                            │
+│ Output: #+STATUS: Accepted                                          │
+│ Plan mode: NO                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ /queue-design-doc doc                                               │
+│                                                                     │
+│ Purpose: Create execution plan from design doc tasks                │
+│ Actions:                                                            │
+│   1. Replicate tasks → backlog.org (with :DESIGN: links)            │
+│   2. Create Claude Task List (with :CLAUDE_TASK: links)             │
+│   3. Enter plan mode with those tasks as the plan                   │
+│                                                                     │
+│ Output: Plan mode active, tasks synchronized                        │
+└─────────────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ Plan Mode Execution                                                 │
+│                                                                     │
+│ Plan (Claude's view)     backlog.org (hub)      Claude Tasks        │
+│ ┌──────────────────┐     ┌──────────────────┐   ┌──────────────────┐│
+│ │ [ ] Task 1       │ ←──►│ *** TODO [ID-01] │◄──►│ Task: ID-01      ││
+│ │ [ ] Task 2       │ ←──►│ *** TODO [ID-02] │◄──►│ Task: ID-02      ││
+│ │ [ ] Task 3       │ ←──►│ *** TODO [ID-03] │◄──►│ Task: ID-03      ││
+│ └──────────────────┘     └──────────────────┘   └──────────────────┘│
+│                                   │                     │           │
+│                                   └─────────────────────┘           │
+│                                   Bidirectional sync                │
+└─────────────────────────────────────────────────────────────────────┘
+#+end_example
+
+*** Design Review (no plan mode)
+
+Reviewing a design document is its own activity with no plan mode involved:
+
+#+begin_example
+/design-review 012
+→ Read document
+→ Check for open questions, decision commentary
+→ Discuss with user
+→ May result in updates to doc
+→ No tasks created or queued
+→ Output: #+STATUS: Accepted (if approved)
+#+end_example
+
+*** Queue Design Doc (creates plan + enters plan mode)
+
+When queuing a design doc, we're using the design doc tasks to feed plan mode:
+
+#+begin_example
+/queue-design-doc 012
+→ Pre-flight checks (status, questions, comments)
+→ Create backlog entries from design doc tasks
+→ Create Claude Task List with same tasks
+→ Enter plan mode with those tasks
+→ Plan, backlog tasks, and Claude Tasks are identical
+#+end_example
+
+The plan, the backlog entries, and the Claude Tasks should be the *same list*.
+
+*** Queue Single Task (creates Claude Task at execution)
+
+When queuing and starting a single task:
+
+#+begin_example
+/task-queue DAB-012-08
+→ Create backlog entry with :DESIGN: link
+→ (No Claude Task yet - just queued)
+
+/task-start DAB-012-08
+→ Create Claude Task for execution
+→ Add :CLAUDE_TASK: link to backlog entry
+→ Begin work
+#+end_example
+
+** Backlog as Sync Point
+
+The backlog is the central sync point connecting all representations:
+
+#+begin_example
+                    backlog.org
+                        │
+        ┌───────────────┼───────────────┐
+        │               │               │
+        ▼               ▼               ▼
+   Design Doc      Claude Task     Claude Plan
+   :DESIGN:        :CLAUDE_TASK:   (in context)
+        │               │               │
+        └───────────────┴───────────────┘
+                        │
+              All point to same work
+#+end_example
+
+*** Sync Rules
+
+| Event                        | Action                                    |
+|------------------------------+-------------------------------------------|
+| Claude creates Task          | Skill notices → adds to backlog with link |
+| Backlog task starts          | Create Claude Task → add link             |
+| Task completes               | Update all representations                |
+| Subagent creates Task        | Flows back to backlog via sync skill      |
+
+** The Sync Skill
+
+Bidirectional sync is handled by one skill (=claude-tasks-sync=):
+
+#+begin_quote
+"When using Claude Tasks, sync them to backlog.org"
+#+end_quote
+
+The skill does:
+1. When Claude creates/updates Tasks, ensure matching backlog entry exists
+2. If backlog entry exists, verify link is present
+3. If backlog entry doesn't exist, create it with =:CLAUDE_TASK:= link
+
+Going the *other* direction (backlog → Claude Task) only happens at execution
+time—when we queue a single task OR an entire design doc for active work.
+
+#+begin_example
+Claude Tasks → backlog.org: Always (via sync skill)
+backlog.org → Claude Tasks: Only at execution time
+#+end_example
+
+This keeps backlog.org as the authoritative human-readable view while letting
+Claude use its native primitives for coordination.
+
+** During Execution
+
+When work is actively happening:
+
+#+begin_example
+If Claude creates new Claude Task (subagent, discovered work):
+  → Create corresponding backlog entry with :CLAUDE_TASK: link
+  → backlog.org stays the human-readable hub
+
+If task completes:
+  → Update backlog entry
+  → Update Claude Task status
+  → Reconcile to design doc (via :DESIGN: link)
+#+end_example
+
 * Impact Assessment
 
 This is a foundational change. The following files require updates:
@@ -326,14 +478,18 @@ Yes. =:SOURCE:= implied "origin" which doesn't fit when tasks come from GitHub
 or Claude Tasks. =:DESIGN:= clearly indicates "link to design doc" and is
 naturally optional.
 
-** OPEN When should Claude auto-create a Claude Task?
+** DECIDED When should Claude auto-create a Claude Task?
+:PROPERTIES:
+:DECIDED: [2026-01-26]
+:END:
 
-Options:
-1. *Never auto* - Only when explicitly requested or via /task-list command
-2. *Heuristic* - Create when task has dependencies or spans sessions
-3. *Always for WIP* - Any task moved to WIP gets a Claude Task
+At *execution time* only:
+- When starting a task (=/task-start=): Create Claude Task for that task
+- When queuing a design doc (=/queue-design-doc=): Create Claude Task List for all tasks
 
-Leaning toward (2): Let Claude judge when coordination primitives are needed.
+Backlog → Claude Task happens only when work begins. The sync skill handles the
+reverse direction (Claude Tasks → backlog) for any Tasks Claude creates during
+execution (subagents, discovered work, etc.).
 
 ** OPEN What's the Beads link format?
 
@@ -357,9 +513,12 @@ capabilities.
 
 ** Phase 1: SOURCE → DESIGN Rename
 
-*** TODO [DAB-012-01] Rename SOURCE→DESIGN in documentation              :p0:
+*** DONE [DAB-012-01] Rename SOURCE→DESIGN in documentation              :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Update CLAUDE.md, README.md, README.org, plugin/README.md with:
@@ -367,9 +526,12 @@ Update CLAUDE.md, README.md, README.org, plugin/README.md with:
 - Mark as optional (not required)
 - Document hub model and new property conventions
 
-*** TODO [DAB-012-02] Rename SOURCE→DESIGN in commands                   :p0:
+*** DONE [DAB-012-02] Rename SOURCE→DESIGN in commands                   :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Update all 6 command files (plugin/ and .claude/):
@@ -379,16 +541,22 @@ Update all 6 command files (plugin/ and .claude/):
 - task-hold.md: Update examples
 - queue-design-doc.md: Rename in output format
 
-*** TODO [DAB-012-03] Rename SOURCE→DESIGN in skills                     :p0:
+*** DONE [DAB-012-03] Rename SOURCE→DESIGN in skills                     :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Update backlog-update skill examples in plugin/ and .claude/.
 
-*** TODO [DAB-012-04] Rename SOURCE→DESIGN in templates                  :p0:
+*** DONE [DAB-012-04] Rename SOURCE→DESIGN in templates                  :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Update backlog-template.org in plugin/templates/ and templates/:
@@ -396,45 +564,82 @@ Update backlog-template.org in plugin/templates/ and templates/:
 - Document as optional
 - Add placeholder for new properties
 
-*** TODO [DAB-012-05] Rename SOURCE→DESIGN in elisp                      :p0:
+*** DONE [DAB-012-05] Rename SOURCE→DESIGN in elisp                      :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Update elisp/workflow-commands.el dab-task-queue function.
 
-*** TODO [DAB-012-06] Migrate backlog.org data                           :p0:
+*** DONE [DAB-012-06] Migrate backlog.org data                           :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Rename =:SOURCE:= to =:DESIGN:= in all 11 existing backlog entries.
 
-*** TODO [DAB-012-07] Update internal design docs                        :p1:
+*** DONE [DAB-012-07] Update internal design docs                        :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
+:WORKED_BY: claude-code
 :END:
 
 Update docs/design/003, 005, 007 with renamed property.
 
 ** Phase 2: Hub Model Features
 
-*** TODO [DAB-012-08] Add :CLAUDE_TASK: support to task-start            :p1:
+*** TODO [DAB-012-08] Create claude-tasks-sync skill                     :p0:
 :PROPERTIES:
 :EFFORT: M
 :END:
 
-When starting a task, optionally create Claude Task and add property link.
-Heuristic: create if task has dependencies or user requests multi-session work.
+New skill that monitors Claude Task creation/updates and ensures matching
+backlog entries exist:
+- When Claude creates a Task, check if backlog entry exists
+- If exists, verify link is present
+- If not, create backlog entry with =:CLAUDE_TASK:= link
+- Single direction: Claude Tasks → backlog.org (always)
 
-*** TODO [DAB-012-09] Update backlog-resume for :CLAUDE_TASK:            :p1:
+This is the core sync mechanism. The reverse direction (backlog → Claude Task)
+happens only at execution time via task-start or queue-design-doc.
+
+*** TODO [DAB-012-09] Add :CLAUDE_TASK: support to task-start            :p1:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+When starting a task, create Claude Task and add property link.
+This is the "execution time" trigger for backlog → Claude Task.
+
+*** TODO [DAB-012-10] Update backlog-resume for :CLAUDE_TASK:            :p1:
 :PROPERTIES:
 :EFFORT: S
 :END:
 
 When resuming, check for Claude Task links and surface coordination state.
 
-*** TODO [DAB-012-10] Add :GITHUB: support to task-queue                 :p2:
+*** TODO [DAB-012-11] Update queue-design-doc for plan mode              :p0:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Update =/queue-design-doc= to:
+1. Create Claude Task List from design doc tasks
+2. Add =:CLAUDE_TASK:= property to each backlog entry
+3. Enter plan mode with synchronized tasks
+4. Display Claude Task List ID in summary
+
+This makes plan, backlog tasks, and Claude Tasks the same list.
+
+*** TODO [DAB-012-12] Add :GITHUB: support to task-queue                 :p2:
 :PROPERTIES:
 :EFFORT: M
 :END:
@@ -442,7 +647,7 @@ When resuming, check for Claude Task links and surface coordination state.
 Allow queuing tasks from GitHub issues:
 =/task-queue --github https://github.com/.../issues/15=
 
-*** TODO [DAB-012-11] Create /task-link command                          :p2:
+*** TODO [DAB-012-13] Create /task-link command                          :p2:
 :PROPERTIES:
 :EFFORT: M
 :END:
@@ -455,7 +660,7 @@ New command to add links to existing backlog tasks:
 /task-link DAB-012-02 --bead session-xyz/task-002
 #+end_example
 
-*** TODO [DAB-012-12] Research Beads integration                         :p2:
+*** TODO [DAB-012-14] Research Beads integration                         :p2:
 :PROPERTIES:
 :EFFORT: M
 :END:
@@ -472,6 +677,10 @@ Investigate Beads format, define =:BEAD:= property convention.
 
 * Changelog
 
+- *2026-01-26:* Phase 1 complete (SOURCE→DESIGN rename across 24 files)
+- *2026-01-26:* Added composability section with workflow diagrams
+- *2026-01-26:* Added queue-design-doc plan mode integration task
+- *2026-01-26:* Decided: Claude Tasks created at execution time only
 - *2026-01-26:* Added impact assessment and phased task breakdown
 - *2026-01-26:* Revised to hub model (backlog as universal glue)
 - *2026-01-26:* Initial draft exploring shadow/sync approaches
