@@ -102,15 +102,10 @@ Chose Y because of reasons.
 
 ** Numbering Scheme
 
-|   Range | Category          |
-|---------+-------------------|
-|     000 | Template          |
-| 001-099 | Core system       |
-| 100-199 | Features          |
-| 200-299 | Infrastructure    |
-| 300-399 | Tooling           |
-| 800-899 | Analysis/Research |
-| 900-999 | Proposals/Future  |
+Documents use sequential numbering (001, 002, 003...). Classification is
+handled via =#+CATEGORY:= in the document frontmatter.
+
+See =docs/design/README.org= for valid categories.
 
 * Decision
 
@@ -131,3 +126,9 @@ CLOSED: [2026-01-04]
 :END:
 
 Create =000-template.org= with all standard sections.
+
+* Changelog
+
+- [2026-01-10] Replaced category-based number ranges with sequential numbering.
+  Documents now use =#+CATEGORY:= frontmatter for classification. See design
+  doc 010 for details.

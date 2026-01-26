@@ -1,0 +1,27 @@
+{
+  "name": "dev-agent-backlog",
+  "owner": {
+    "name": "J. Aaron Farr",
+    "email": "farra@apache.org"
+  },
+  "metadata": {
+    "description": "Design doc driven task management for human-agent collaboration",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "backlog",
+      "source": "./plugin",
+      "description": "Design doc driven task management with org-mode files, backlog workflow, and task tracking",
+      "version": "1.0.0",
+      "author": {
+        "name": "J. Aaron Farr"
+      },
+      "homepage": "https://github.com/farra/dev-agent-backlog",
+      "repository": "https://github.com/farra/dev-agent-backlog",
+      "license": "MIT",
+      "keywords": ["design-docs", "backlog", "task-management", "org-mode", "workflow"],
+      "category": "productivity"
+    }
+  ]
+}

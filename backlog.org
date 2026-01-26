@@ -7,6 +7,28 @@ Active tasks checked out from design docs.
 
 ** Active
 
+*** TODO [DAB-011-06] Test plugin locally                                 :p1:
+:PROPERTIES:
+:SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-06 in 011-plugin-architecture.org]]
+:EFFORT: M
+:END:
+
+Use =claude --plugin-dir ./plugin= to test all commands and skills.
+
+** Recently Completed (011)
+
+- [DAB-011-01] Create plugin directory structure
+- [DAB-011-02] Migrate commands to plugin
+- [DAB-011-03] Migrate skills to plugin
+- [DAB-011-04] Create setup skill
+- [DAB-011-05] Copy templates to plugin
+- [DAB-011-07] Write plugin README
+- [DAB-011-08] Decide on repo strategy (marketplace approach)
+- [DAB-011-09] Deprecate init.sh
+- [DAB-011-10] Create marketplace.json
+
+** Superseded by Plugin (010)
+
 *** TODO [PROJECT-010-01] Update /new-design-doc command                  :p1:
 :PROPERTIES:
 :SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-01 in 010-design-doc-metadata.org]]
