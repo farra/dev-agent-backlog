@@ -58,20 +58,23 @@ Success criteria:
 ** Non-Goals
 
 - Maintaining backwards compatibility with init.sh (deprecate it)
-- Building a marketplace (use GitHub URL directly for now)
 - Supporting pre-1.0.33 Claude Code versions
+- Supporting other coding agents initially (methodology is portable, adapters later)
 
 * Proposal
 
 ** Overview
 
-Create a =backlog= plugin with this structure:
+This repo becomes a marketplace containing the =backlog= plugin:
 
 #+begin_example
-backlog-plugin/
+dev-agent-backlog/                    # This repo (marketplace)
 ├── .claude-plugin/
-│   └── plugin.json
-├── commands/
+│   └── marketplace.json              # Lists available plugins
+├── plugin/                           # The backlog plugin
+│   ├── .claude-plugin/
+│   │   └── plugin.json
+│   ├── commands/
 │   ├── task-queue.md
 │   ├── task-start.md
 │   ├── task-complete.md
@@ -88,13 +91,10 @@ backlog-plugin/
 │   │   └── SKILL.md
 │   └── setup/
 │       └── SKILL.md
-├── templates/
-│   ├── readme-project.org
-│   ├── readme-design.org
-│   ├── org-setup.org
-│   ├── backlog-template.org
-│   ├── design-doc-template.org
-│   └── changelog-template.md
+│   └── templates/
+│       └── (6 template files)
+├── docs/design/                      # Meta-documentation (this system)
+├── bin/init.sh                       # Deprecated, points to plugin
 └── README.md
 #+end_example
 
@@ -202,71 +202,111 @@ This is viable and worth considering. Tradeoff is URL complexity:
 
 * Questions                                                      :questions:
 
-** OPEN Separate repo or subdirectory?
+** DECIDED Separate repo or subdirectory?
+:PROPERTIES:
+:DECIDED: [2026-01-26]
+:END:
 
-Options:
-1. New repo =backlog-plugin= - cleaner URLs, separate versioning
-2. Subdirectory =plugin/= in this repo - single source of truth, but messier
+*Decision:* This repo becomes a marketplace containing the backlog plugin.
 
-Leaning toward separate repo for cleaner installation URL.
+The =plugin/= subdirectory contains the installable plugin. A =marketplace.json=
+at the repo root lists available plugins. Installation:
 
-** OPEN What goes in CLAUDE.md vs stays in plugin?
+#+begin_example
+/plugin marketplace add farra/dev-agent-backlog
+/plugin install backlog@farra-dev-agent-backlog
+#+end_example
 
-The plugin's skills have instructions, but projects also need CLAUDE.md
-context. What's the right split?
+Rationale:
+- Single source of truth (plugin and docs together)
+- This repo dogfoods its own system
+- Marketplace approach required by Claude Code for GitHub installs
 
-- Plugin skills: HOW to do things (task-queue mechanics)
-- Project CLAUDE.md: WHAT this project uses (design doc locations, conventions)
+** DECIDED What goes in CLAUDE.md vs stays in plugin?
+:PROPERTIES:
+:DECIDED: [2026-01-26]
+:END:
 
-** OPEN How to handle template customization?
+*Decision:*
+- Plugin skills: HOW to do things (task-queue mechanics, workflow steps)
+- Project CLAUDE.md: WHAT this project uses (design doc locations, project prefix)
 
-Some projects may want different categories, statuses, or conventions. Options:
-1. Setup skill asks and customizes on install
-2. Users edit files after setup
-3. Plugin config file in project
+The =setup= skill writes a minimal CLAUDE.md section pointing to plugin commands.
 
-Start simple: users edit after setup. Add config later if needed.
+** DECIDED How to handle template customization?
+:PROPERTIES:
+:DECIDED: [2026-01-26]
+:END:
+
+*Decision:* Start simple - users edit files after setup. Add config later if needed.
+
+The templates provide sensible defaults. Users customize by editing:
+- =README.org= for categories/statuses
+- =org-setup.org= for org-mode settings
+- Individual design docs as needed
+
+** DECIDED Support for other coding agents?
+:PROPERTIES:
+:DECIDED: [2026-01-26]
+:END:
+
+*Decision:* Claude Code first, document for portability, adapters later if demand.
+
+Research findings on other agents:
+- *OpenAI Codex*: Has "agent skills" (similar concept), MCP support, slash commands
+- *Google Gemini CLI*: Has "extensions" with "playbooks", MCP support
+- *OpenCode*: Has JS/TS plugins, custom commands/agents, MCP support
+
+All support MCP and custom instructions. The design doc methodology (org files,
+backlog pattern) is agent-agnostic. Only the plugin/skill format differs.
+
+Future: Could add =adapters/codex/=, =adapters/gemini-cli/= directories with
+agent-specific skill formats. For now, document that methodology works with any
+agent that can read/write files.
 
 * Tasks                                                              :tasks:
 
-** TODO [DAB-011-01] Create plugin directory structure                   :p0:
+** DONE [DAB-011-01] Create plugin directory structure                   :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
 :END:
 
 Create =plugin/= directory with =.claude-plugin/plugin.json= manifest.
 
-** TODO [DAB-011-02] Migrate commands to plugin                          :p0:
+** DONE [DAB-011-02] Migrate commands to plugin                          :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
 :END:
 
 Copy commands from =.claude/commands/= to =plugin/commands/=.
-Update any internal references.
 
-** TODO [DAB-011-03] Migrate skills to plugin                            :p0:
+** DONE [DAB-011-03] Migrate skills to plugin                            :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
 :END:
 
 Copy skills from =.claude/skills/= to =plugin/skills/=.
-Update any internal references.
 
-** TODO [DAB-011-04] Create setup skill                                  :p1:
+** DONE [DAB-011-04] Create setup skill                                  :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: M
+:COMPLETED_BY: claude-code
 :END:
 
 Write =plugin/skills/setup/SKILL.md= that replaces init.sh functionality.
-Should handle:
-- Project prefix detection/prompting
-- File creation with template substitution
-- CLAUDE.md integration
-- Existing file detection
 
-** TODO [DAB-011-05] Copy templates to plugin                            :p0:
+** DONE [DAB-011-05] Copy templates to plugin                            :p0:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
 :END:
 
 Copy =templates/= directory into plugin.
@@ -285,13 +325,14 @@ Use =claude --plugin-dir ./plugin= to test all commands and skills.
 
 Document installation and usage for plugin users.
 
-** TODO [DAB-011-08] Decide on repo strategy                             :p1:
+** DONE [DAB-011-08] Decide on repo strategy                             :p1:
+CLOSED: [2026-01-26]
 :PROPERTIES:
 :EFFORT: S
+:COMPLETED_BY: claude-code
 :END:
 
-Resolve OPEN question: separate repo vs subdirectory.
-If separate repo, create it and move plugin there.
+Decision: This repo becomes a marketplace. See DECIDED questions above.
 
 ** TODO [DAB-011-09] Deprecate init.sh                                   :p2:
 :PROPERTIES:
@@ -299,7 +340,13 @@ If separate repo, create it and move plugin there.
 :END:
 
 Update init.sh to print deprecation warning pointing to plugin.
-Update README.md with new installation instructions.
+
+** TODO [DAB-011-10] Create marketplace.json                             :p0:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Add =.claude-plugin/marketplace.json= to repo root listing the backlog plugin.
 
 * References
 
@@ -310,4 +357,6 @@ Update README.md with new installation instructions.
 
 * Changelog
 
+- *2026-01-26:* Decided on marketplace approach; researched other coding agents
+- *2026-01-26:* Completed tasks 01-05, 08; plugin structure in place
 - *2026-01-26:* Initial draft

@@ -7,46 +7,6 @@ Active tasks checked out from design docs.
 
 ** Active
 
-*** TODO [DAB-011-01] Create plugin directory structure                   :p0:
-:PROPERTIES:
-:SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-01 in 011-plugin-architecture.org]]
-:EFFORT: S
-:END:
-
-Create =plugin/= directory with =.claude-plugin/plugin.json= manifest.
-
-*** TODO [DAB-011-02] Migrate commands to plugin                          :p0:
-:PROPERTIES:
-:SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-02 in 011-plugin-architecture.org]]
-:EFFORT: S
-:END:
-
-Copy commands from =.claude/commands/= to =plugin/commands/=.
-
-*** TODO [DAB-011-03] Migrate skills to plugin                            :p0:
-:PROPERTIES:
-:SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-03 in 011-plugin-architecture.org]]
-:EFFORT: S
-:END:
-
-Copy skills from =.claude/skills/= to =plugin/skills/=.
-
-*** TODO [DAB-011-04] Create setup skill                                  :p1:
-:PROPERTIES:
-:SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-04 in 011-plugin-architecture.org]]
-:EFFORT: M
-:END:
-
-Write =plugin/skills/setup/SKILL.md= that replaces init.sh functionality.
-
-*** TODO [DAB-011-05] Copy templates to plugin                            :p0:
-:PROPERTIES:
-:SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-05 in 011-plugin-architecture.org]]
-:EFFORT: S
-:END:
-
-Copy =templates/= directory into plugin.
-
 *** TODO [DAB-011-06] Test plugin locally                                 :p1:
 :PROPERTIES:
 :SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-06 in 011-plugin-architecture.org]]
@@ -55,29 +15,17 @@ Copy =templates/= directory into plugin.
 
 Use =claude --plugin-dir ./plugin= to test all commands and skills.
 
-*** TODO [DAB-011-07] Write plugin README                                 :p1:
-:PROPERTIES:
-:SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-07 in 011-plugin-architecture.org]]
-:EFFORT: S
-:END:
+** Recently Completed (011)
 
-Document installation and usage for plugin users.
-
-*** TODO [DAB-011-08] Decide on repo strategy                             :p1:
-:PROPERTIES:
-:SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-08 in 011-plugin-architecture.org]]
-:EFFORT: S
-:END:
-
-Resolve: separate repo vs subdirectory for plugin.
-
-*** TODO [DAB-011-09] Deprecate init.sh                                   :p2:
-:PROPERTIES:
-:SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-09 in 011-plugin-architecture.org]]
-:EFFORT: S
-:END:
-
-Update init.sh to print deprecation warning pointing to plugin.
+- [DAB-011-01] Create plugin directory structure
+- [DAB-011-02] Migrate commands to plugin
+- [DAB-011-03] Migrate skills to plugin
+- [DAB-011-04] Create setup skill
+- [DAB-011-05] Copy templates to plugin
+- [DAB-011-07] Write plugin README
+- [DAB-011-08] Decide on repo strategy (marketplace approach)
+- [DAB-011-09] Deprecate init.sh
+- [DAB-011-10] Create marketplace.json
 
 ** Superseded by Plugin (010)
 

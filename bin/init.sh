@@ -15,6 +15,35 @@
 
 set -euo pipefail
 
+# =============================================================================
+# DEPRECATION NOTICE
+# =============================================================================
+# This script is deprecated. Use the Claude Code plugin instead:
+#
+#   /plugin marketplace add farra/dev-agent-backlog
+#   /plugin install backlog@dev-agent-backlog
+#
+# Then in your project:
+#   /backlog:setup
+#
+# The plugin provides an interactive setup experience and auto-updating.
+# This script will be removed in a future release.
+# =============================================================================
+
+echo ""
+echo "WARNING: init.sh is deprecated."
+echo ""
+echo "Use the Claude Code plugin instead:"
+echo "  /plugin marketplace add farra/dev-agent-backlog"
+echo "  /plugin install backlog@dev-agent-backlog"
+echo ""
+echo "Then run: /backlog:setup"
+echo ""
+echo "Continuing with legacy install in 3 seconds..."
+echo "(Press Ctrl+C to cancel)"
+sleep 3
+echo ""
+
 usage() {
     # Print the script's header comments, stopping at the first non-comment line.
     sed '/^#/!q' "$0" | grep '^#[^!]' | cut -c3-
