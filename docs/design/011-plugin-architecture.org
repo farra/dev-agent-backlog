@@ -1,0 +1,313 @@
+#+TITLE: 011 - Claude Code Plugin Architecture
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Draft
+#+CATEGORY: infra
+#+CREATED: [2026-01-26]
+#+LAST_MODIFIED: [2026-01-26]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+Convert dev-agent-backlog from a shell-script-installed template system into a
+Claude Code plugin. This enables installation via =/plugin install=, automatic
+skill loading, and an interactive setup experience that replaces =init.sh=.
+
+* Context
+
+** Current State
+
+The project uses =bin/init.sh= to bootstrap new projects:
+- Copies template files (org-setup.org, backlog-template.org, etc.)
+- Substitutes =PROJECT= placeholder with user's prefix
+- Creates directory structure
+- Copies commands and skills to =.claude/=
+
+This works but has issues:
+- Users must clone the repo or download init.sh
+- Template content was duplicated in heredocs (now fixed, uses templates/)
+- No easy update path when templates change
+- Skills/commands only available after manual copying
+
+** Claude Code Plugins
+
+Claude Code 1.0.33+ supports plugins with:
+- Skills (model-invoked behaviors)
+- Commands (user-invoked slash commands)
+- Hooks (event handlers)
+- MCP servers (external tool integration)
+
+Plugins can be installed from URLs/marketplaces and are namespaced to prevent
+conflicts.
+
+* Goals and Non-Goals
+
+** Goals
+
+1. Install via =/plugin install <url>= with no shell scripts
+2. Commands immediately available as =/backlog:task-queue=, etc.
+3. Skills (backlog-resume, backlog-update) work automatically
+4. Interactive =/backlog:setup= command replaces init.sh
+5. Setup skill can update CLAUDE.md with project context
+6. Easy updates when plugin is improved
+
+Success criteria:
+- New user can go from zero to working backlog in <2 minutes
+- Existing init.sh users can migrate without losing data
+- Plugin works across projects without re-installation
+
+** Non-Goals
+
+- Maintaining backwards compatibility with init.sh (deprecate it)
+- Building a marketplace (use GitHub URL directly for now)
+- Supporting pre-1.0.33 Claude Code versions
+
+* Proposal
+
+** Overview
+
+Create a =backlog= plugin with this structure:
+
+#+begin_example
+backlog-plugin/
+├── .claude-plugin/
+│   └── plugin.json
+├── commands/
+│   ├── task-queue.md
+│   ├── task-start.md
+│   ├── task-complete.md
+│   ├── task-hold.md
+│   ├── new-design-doc.md
+│   ├── queue-design-doc.md
+│   └── design-review.md
+├── skills/
+│   ├── backlog-resume/
+│   │   └── SKILL.md
+│   ├── backlog-update/
+│   │   └── SKILL.md
+│   ├── new-design-doc/
+│   │   └── SKILL.md
+│   └── setup/
+│       └── SKILL.md
+├── templates/
+│   ├── readme-project.org
+│   ├── readme-design.org
+│   ├── org-setup.org
+│   ├── backlog-template.org
+│   ├── design-doc-template.org
+│   └── changelog-template.md
+└── README.md
+#+end_example
+
+** Design
+
+*** Plugin Manifest
+
+#+begin_src json
+{
+  "name": "backlog",
+  "description": "Design doc driven task management for human-agent collaboration",
+  "version": "1.0.0",
+  "author": {
+    "name": "J. Aaron Farr"
+  },
+  "repository": "https://github.com/farra/backlog-plugin",
+  "homepage": "https://github.com/farra/dev-agent-backlog"
+}
+#+end_src
+
+*** The Setup Skill
+
+The =setup= skill replaces init.sh. It triggers when users say things like:
+- "set up design docs for this project"
+- "initialize the backlog system"
+- "configure design doc workflow"
+
+The skill instructs Claude to:
+1. Ask for project prefix (or detect from existing files)
+2. Check for existing files to avoid clobbering
+3. Create directory structure (docs/design/)
+4. Write template files with PROJECT substitution
+5. Update or create CLAUDE.md with backlog instructions
+6. Explain what was created and how to use it
+
+*** Command Migration
+
+Current commands in =.claude/commands/= move to =commands/= in the plugin.
+They become namespaced:
+
+| Current           | Plugin                    |
+|-------------------+---------------------------|
+| /task-queue       | /backlog:task-queue       |
+| /task-start       | /backlog:task-start       |
+| /task-complete    | /backlog:task-complete    |
+| /task-hold        | /backlog:task-hold        |
+| /new-design-doc   | /backlog:new-design-doc   |
+| /queue-design-doc | /backlog:queue-design-doc |
+| /design-review    | /backlog:design-review    |
+
+*** Skill Migration
+
+Skills move from =.claude/skills/= to =skills/= in the plugin:
+
+| Current         | Plugin                      |
+|-----------------+-----------------------------|
+| backlog-resume  | backlog:backlog-resume      |
+| backlog-update  | backlog:backlog-update      |
+| new-design-doc  | backlog:new-design-doc      |
+| (new)           | backlog:setup               |
+
+*** Template Handling
+
+Templates stay as files in =templates/=. The setup skill reads them and
+performs PROJECT substitution when writing to the user's project.
+
+This is better than init.sh because Claude can:
+- Detect existing project prefix from files
+- Ask clarifying questions
+- Adapt to non-standard project structures
+- Explain what each file does as it creates it
+
+*** CLAUDE.md Integration
+
+The setup skill should append or merge backlog instructions into the project's
+CLAUDE.md. Content includes:
+- Overview of the backlog system
+- Available commands and when to use them
+- Pointer to design docs directory
+
+** Alternatives Considered
+
+*** Keep init.sh, add plugin alongside
+
+Could keep init.sh for users who prefer shell scripts and add the plugin for
+Claude Code users.
+
+Rejected: Maintenance burden of two installation paths. Plugin approach is
+strictly better for Claude Code users.
+
+*** Single repo with plugin structure
+
+Could restructure this repo to BE the plugin (add .claude-plugin/ at root).
+
+Rejected: This repo contains documentation and design docs that shouldn't be
+in the plugin. Better to have a separate plugin repo or subdirectory.
+
+*** Plugin as subdirectory
+
+Keep everything in this repo but have a =plugin/= subdirectory that IS the
+plugin.
+
+This is viable and worth considering. Tradeoff is URL complexity:
+=github:farra/dev-agent-backlog/plugin= vs =github:farra/backlog-plugin=
+
+* Questions                                                      :questions:
+
+** OPEN Separate repo or subdirectory?
+
+Options:
+1. New repo =backlog-plugin= - cleaner URLs, separate versioning
+2. Subdirectory =plugin/= in this repo - single source of truth, but messier
+
+Leaning toward separate repo for cleaner installation URL.
+
+** OPEN What goes in CLAUDE.md vs stays in plugin?
+
+The plugin's skills have instructions, but projects also need CLAUDE.md
+context. What's the right split?
+
+- Plugin skills: HOW to do things (task-queue mechanics)
+- Project CLAUDE.md: WHAT this project uses (design doc locations, conventions)
+
+** OPEN How to handle template customization?
+
+Some projects may want different categories, statuses, or conventions. Options:
+1. Setup skill asks and customizes on install
+2. Users edit files after setup
+3. Plugin config file in project
+
+Start simple: users edit after setup. Add config later if needed.
+
+* Tasks                                                              :tasks:
+
+** TODO [DAB-011-01] Create plugin directory structure                   :p0:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Create =plugin/= directory with =.claude-plugin/plugin.json= manifest.
+
+** TODO [DAB-011-02] Migrate commands to plugin                          :p0:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Copy commands from =.claude/commands/= to =plugin/commands/=.
+Update any internal references.
+
+** TODO [DAB-011-03] Migrate skills to plugin                            :p0:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Copy skills from =.claude/skills/= to =plugin/skills/=.
+Update any internal references.
+
+** TODO [DAB-011-04] Create setup skill                                  :p1:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Write =plugin/skills/setup/SKILL.md= that replaces init.sh functionality.
+Should handle:
+- Project prefix detection/prompting
+- File creation with template substitution
+- CLAUDE.md integration
+- Existing file detection
+
+** TODO [DAB-011-05] Copy templates to plugin                            :p0:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Copy =templates/= directory into plugin.
+
+** TODO [DAB-011-06] Test plugin locally                                 :p1:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Use =claude --plugin-dir ./plugin= to test all commands and skills.
+
+** TODO [DAB-011-07] Write plugin README                                 :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Document installation and usage for plugin users.
+
+** TODO [DAB-011-08] Decide on repo strategy                             :p1:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Resolve OPEN question: separate repo vs subdirectory.
+If separate repo, create it and move plugin there.
+
+** TODO [DAB-011-09] Deprecate init.sh                                   :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Update init.sh to print deprecation warning pointing to plugin.
+Update README.md with new installation instructions.
+
+* References
+
+- [[https://code.claude.com/docs/en/plugins][Claude Code Plugin Documentation]]
+- [[https://code.claude.com/docs/en/skills][Skills Documentation]]
+- [[file:001-system-overview.org][001 - System Overview]]
+- [[file:002-design-docs.org][002 - Design Doc Pattern]]
+
+* Changelog
+
+- *2026-01-26:* Initial draft

@@ -35,6 +35,7 @@ its rationale, and any implementation tasks.
 | 008 | [[file:008-compound-engineering-patterns.org][Compound Engineering Patterns]] | Draft |
 | 009 | [[file:009-beads-features.org][Beads-Inspired Features]]  | Draft    |
 | 010 | [[file:010-design-doc-metadata.org][Categories and Status Fields]] | Active |
+| 011 | [[file:011-plugin-architecture.org][Claude Code Plugin Architecture]] | Draft |
 
 ** Templates
 
