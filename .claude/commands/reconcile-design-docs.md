@@ -74,7 +74,33 @@ Scan design documents and cross-reference task statuses with evidence from git l
      - Prompt: "All tasks complete. Mark doc as #+STATUS: Complete? [y/n]"
      - If yes, update `#+STATUS:` and `#+LAST_MODIFIED:`
 
-9. **Generate report**:
+9. **Reconcile README.org index**:
+   - Parse `docs/design/README.org` to get listed docs and their statuses
+   - Compare against actual files in `docs/design/`:
+     - **Missing entries**: Docs on disk but not in README.org
+     - **Stale status**: README.org status differs from doc's `#+STATUS:`
+     - **Orphan entries**: Listed in README.org but file doesn't exist
+   - Present findings:
+     ```
+     ## README.org Index Reconciliation
+
+     ### Missing from index (will add):
+     - 013-reconciliation-commands.org (Draft)
+
+     ### Status mismatch (will update):
+     - 007-queue-design-doc.org: README says "Active", doc says "Complete"
+
+     ### Orphan entries (will remove):
+     - 099-deleted-doc.org (file not found)
+
+     Apply index updates? [y/n]:
+     ```
+   - If confirmed, update README.org:
+     - Add missing docs to appropriate section (Core System or new section)
+     - Update status values to match actual `#+STATUS:`
+     - Remove orphan entries
+
+10. **Generate report**:
    ```
    ## Reconciliation Summary
 
@@ -87,6 +113,10 @@ Scan design documents and cross-reference task statuses with evidence from git l
 
    ### User-Confirmed Changes:
    - [DAB-007-03] → DONE
+
+   ### README.org Index Updates:
+   - Added: 013-reconciliation-commands.org (Draft)
+   - Updated: 007-queue-design-doc.org (Active → Complete)
 
    ### No Changes Needed:
    - 001-system-overview.org (already Complete)
@@ -139,7 +169,7 @@ CLOSED: [2026-01-26]
 
 - Design docs: @docs/design/[0-9]*.org
 - Evidence sources: git log, @CHANGELOG.md, source code
-- Index: @docs/design/README.org (update if doc status changes)
+- Index: @docs/design/README.org (reconciled: missing docs added, stale statuses updated)
 
 ## Example
 

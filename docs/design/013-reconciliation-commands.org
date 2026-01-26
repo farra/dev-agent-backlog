@@ -32,6 +32,9 @@ Over time, the following drift patterns emerge:
 5. **Inconsistent states** - A task is DONE in backlog but TODO in design doc
    (or vice versa)
 
+6. **Stale README.org index** - The =docs/design/README.org= index is missing docs,
+   has orphan entries, or shows outdated status values
+
 The current workflow assumes disciplined use of =/task-complete= and =/task-queue=,
 but in practice work happens outside this flow. These commands restore consistency.
 
@@ -100,9 +103,13 @@ Process:
 5. *Interactive review*:
    - Present =unclear= tasks with gathered evidence
    - Ask user to confirm status for each
-6. *Report*:
+6. *Reconcile README.org index*:
+   - Compare actual files vs. README.org entries
+   - Add missing docs, update stale statuses, remove orphan entries
+7. *Report*:
    - Summary of changes made
    - List of docs that changed status
+   - README.org index updates
    - Count of tasks by final state
 
 *** /reconcile-backlog Command
