@@ -1,0 +1,303 @@
+#+TITLE: 014 - Spec-Driven Development Research
+#+AUTHOR: claude-code
+#+STATUS: Complete
+#+CATEGORY: research
+#+CREATED: [2026-01-26]
+#+LAST_MODIFIED: [2026-01-26]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+This document compares dev-agent-backlog's design doc pattern with AWS Kiro's
+"spec-driven development" approach. Both systems independently evolved to
+solve the same fundamental problem: AI agents need structured context to make
+good decisions, and pure "vibe coding" breaks down on complex tasks.
+
+*Key finding:* Yes, dev-agent-backlog uses spec-driven development. We
+independently evolved a similar pattern with meaningful differences in
+philosophy and workflow.
+
+* Motivation
+
+AWS released Kiro in 2025, marketing "spec-driven development" as the
+antidote to vibe coding. This prompted questions:
+
+1. Does dev-agent-backlog use spec-driven development?
+2. Did we independently evolve this pattern?
+3. How does our approach differ?
+
+Understanding the landscape helps us validate our design decisions and
+identify potential improvements.
+
+* Kiro's Spec-Driven Development
+
+** Core Philosophy
+
+Kiro positions specs as "super prompts" - structured artifacts that guide AI
+execution and prevent context drift. The spec becomes an anchor that keeps
+the AI from "doing absurd things" during troubleshooting.
+
+** Three-Phase Workflow
+
+#+begin_src
+Prompt → Requirements → Design → Tasks → Code
+           (EARS)      (arch)   (deps)
+#+end_src
+
+1. *Requirements Phase* (~requirements.md~)
+   - Natural language prompt converted to EARS notation
+   - User stories with acceptance criteria
+   - Edge cases identified
+
+2. *Design Phase* (~design.md~)
+   - Technical architecture
+   - Mermaid diagrams
+   - Schema definitions
+   - Implementation considerations
+
+3. *Task Phase* (~tasks.md~)
+   - Discrete, trackable tasks
+   - Sequenced by dependencies
+   - Optional test generation
+
+** File Structure
+
+#+begin_src
+.kiro/
+├── specs/
+│   └── feature-name/
+│       ├── requirements.md
+│       ├── design.md
+│       └── tasks.md
+└── steering/           # Project conventions
+    └── *.md
+#+end_src
+
+** Key Features
+
+- *Agent Hooks*: Event-driven automation (file save triggers tests, etc.)
+- *Agent Steering*: Persistent project knowledge in ~.kiro/steering/~
+- *Spec Sync*: Specs stay synchronized with evolving code
+- *IDE Integration*: VS Code fork with built-in spec management
+
+** Workflow
+
+#+begin_src
+1. Developer writes prompt
+2. Kiro generates requirements.md
+3. Developer reviews/refines
+4. Kiro generates design.md
+5. Developer approves architecture
+6. Kiro generates tasks.md
+7. Tasks execute one-by-one with approval
+8. Code generated and tested
+#+end_src
+
+* dev-agent-backlog's Design Doc Pattern
+
+** Core Philosophy
+
+Design docs are the *canonical archive of decisions*. Tasks exist because of
+design decisions, and that decision context should stay with the task
+definition. The backlog is an ephemeral working surface; design docs are
+permanent.
+
+** RFC/RFD-Based Workflow
+
+#+begin_src
+Design Doc → Queue → Backlog → Work → Reconcile → Design Doc
+  (plan)    (checkout)  (WIP)  (impl)  (return)   (archive)
+#+end_src
+
+** Single-Document Structure
+
+#+begin_src org
+,#+TITLE: NNN - Feature Name
+,#+STATUS: Draft → Accepted → Active → Complete
+
+,* Summary
+One paragraph overview
+
+,* Motivation
+Why this matters
+
+,* Design
+Options considered, tradeoffs
+
+,* Decision
+What we chose and why
+
+,* Tasks
+,** TODO [PROJECT-NNN-01] Task one
+,** TODO [PROJECT-NNN-02] Task two
+
+,* Questions
+,** OPEN Should we do X?
+,** DECIDED We chose Y because...
+#+end_src
+
+** File Structure
+
+#+begin_src
+docs/design/
+├── 000-template.org
+├── 001-feature.org      # All sections in one file
+├── 002-another.org
+└── README.org           # Index
+
+backlog.org              # Ephemeral working surface
+#+end_src
+
+** Key Features
+
+- *Slash Commands*: ~/task-queue~, ~/task-start~, ~/task-complete~
+- *Skills*: Proactive triggers (~backlog-resume~, ~backlog-update~)
+- *Pre-flight Checks*: Validate open questions before execution
+- *Hub Pattern*: backlog.org links to design docs, Claude Tasks, GitHub
+
+** Workflow
+
+#+begin_src
+1. Author writes design doc (motivation, options, decision)
+2. Tasks defined inline with IDs
+3. /queue-design-doc runs pre-flight checks
+4. Tasks copied to backlog.org with :DESIGN: links
+5. Agent works via /task-start, /task-complete
+6. Completed tasks reconciled back to design doc
+7. Backlog entry removed; design doc is permanent record
+#+end_src
+
+* Comparison
+
+** Similarities (Independent Convergence)
+
+| Aspect                | Both Systems                                    |
+|-----------------------+-------------------------------------------------|
+| Problem solved        | Vibe coding breaks on complex tasks             |
+| Core artifact         | Structured planning documents                   |
+| Phase separation      | Requirements → Design → Tasks → Implementation  |
+| Version control       | Git-tracked, human-readable files               |
+| Context preservation  | Decisions persist across sessions               |
+| Task tracking         | Discrete, identifiable tasks with dependencies  |
+| Automation triggers   | Hooks/Skills for proactive behaviors            |
+
+** Key Differences
+
+| Aspect              | Kiro                          | dev-agent-backlog                |
+|---------------------+-------------------------------+----------------------------------|
+| *Format*            | Markdown (.md)                | Org-mode (.org)                  |
+| *Structure*         | Separate files per concern    | Single doc, all sections inline  |
+| *Context locality*  | Tasks reference requirements  | Tasks live in design doc         |
+| *Primary metaphor*  | "Super prompt" for AI         | "Canonical archive" of decisions |
+| *Working surface*   | Specs are the surface         | Separate backlog.org             |
+| *Task execution*    | AI executes sequentially      | Human/agent checkout model       |
+| *Completion*        | Tasks marked in tasks.md      | Reconciled back to design doc    |
+| *Permanence*        | Specs may drift               | Design docs are permanent record |
+| *Integration*       | IDE-embedded (VS Code fork)   | Editor-agnostic (file-based)     |
+| *Scope*             | Feature-level specs           | Feature + system-level docs      |
+
+** Philosophical Differences
+
+*** Kiro: Specs as Input
+Specs are primarily *input to the AI* - structured prompts that guide
+generation. The workflow is linear: prompt → spec → code.
+
+*** dev-agent-backlog: Design Docs as Archive
+Design docs are primarily *output of thinking* - the permanent record of why
+decisions were made. The workflow is circular: think → document → execute →
+reconcile → archive.
+
+*** Implications
+
+| Kiro                                  | dev-agent-backlog                         |
+|---------------------------------------+-------------------------------------------|
+| Optimized for greenfield AI coding    | Optimized for human-agent collaboration   |
+| Spec generation is automated          | Design doc authoring is deliberate        |
+| Focus: Guide AI to correct output     | Focus: Preserve decision context          |
+| Specs may become stale                | Design docs are maintained as archive     |
+| One-way: spec → code                  | Bidirectional: checkout → reconcile       |
+
+** Technical Trade-offs
+
+*** Kiro Advantages
+- Lower friction to start (AI generates initial spec)
+- IDE integration (visual spec editing)
+- EARS notation provides structure
+- Agent hooks for automated workflows
+
+*** dev-agent-backlog Advantages
+- Context locality (task + rationale together)
+- No external dependencies (pure files)
+- Works with any editor/agent
+- Atomic commits (code + task state)
+- Richer org-mode features (folding, tags, properties)
+- Hub pattern supports multiple link types
+
+* Did We Independently Evolve This?
+
+*Yes.* Evidence:
+
+1. *Timeline*: dev-agent-backlog's design doc pattern predates Kiro's
+   public release
+
+2. *Influences differ*:
+   - Kiro: EARS notation, enterprise spec management
+   - dev-agent-backlog: RFC/RFD pattern, org-mode ecosystem, Gastown metaphors
+
+3. *Core philosophy differs*:
+   - Kiro: Specs as AI guidance
+   - dev-agent-backlog: Design docs as decision archive
+
+4. *Workflow differs*:
+   - Kiro: Linear generation pipeline
+   - dev-agent-backlog: Checkout/reconcile with ephemeral working surface
+
+The convergence reflects a shared recognition that AI agents need structured
+context, but the solutions emerged from different traditions and optimize
+for different workflows.
+
+* Assessment
+
+** Where Kiro Excels
+- *Onboarding*: AI-generated specs lower the barrier to start
+- *Integration*: IDE-native experience
+- *Standardization*: EARS provides consistent structure
+
+** Where dev-agent-backlog Excels
+- *Context preservation*: Decision rationale stays with tasks
+- *Flexibility*: Editor-agnostic, works with any tooling
+- *Permanence*: Design docs serve as long-term documentation
+- *Human-agent balance*: Explicit checkout model
+- *Atomic operations*: Task state + code in same commit
+
+** Potential Improvements for dev-agent-backlog
+
+Consider borrowing from Kiro:
+
+1. *EARS-style acceptance criteria*: Could add structured AC format
+2. *Mermaid diagram convention*: Already possible in org-mode
+3. *Auto-generation option*: ~/new-design-doc~ could offer AI scaffolding
+4. *Spec sync validation*: ~/reconcile~ already does some of this
+
+* Decision
+
+No changes required. The research validates that dev-agent-backlog's
+approach is a valid form of spec-driven development with distinct advantages
+for human-agent collaboration and long-term maintainability.
+
+The key insight is that *both approaches solve the same problem from
+different angles*:
+- Kiro: Make AI-generated code more reliable
+- dev-agent-backlog: Make human-agent collaboration more effective
+
+Our "design docs as canonical archive" philosophy is well-suited for
+projects that value decision documentation and long-term maintainability.
+
+* Sources
+
+- [[https://kiro.dev/docs/specs/][Kiro Specs Documentation]]
+- [[https://kiro.dev/blog/introducing-kiro/][Introducing Kiro - Official Blog]]
+- [[https://www.infoq.com/news/2025/08/aws-kiro-spec-driven-agent/][Beyond Vibe Coding: Amazon Introduces Kiro - InfoQ]]
+- [[https://dev.to/aws-heroes/getting-started-with-spec-driven-development-using-kiro-400l][Getting Started with Spec-driven Development Using Kiro - DEV]]
+- [[https://thenewstack.io/aws-kiro-testing-an-ai-ide-with-a-spec-driven-approach/][AWS Kiro: Testing an AI IDE with a Spec-Driven Approach - The New Stack]]
+- [[https://repost.aws/articles/AROjWKtr5RTjy6T2HbFJD_Mw/kiro-agentic-ai-ide][Kiro Agentic AI IDE - AWS re:Post]]
