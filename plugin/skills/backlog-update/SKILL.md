@@ -7,9 +7,17 @@ description: Reminder to update backlog.org before commits or when finishing sig
 
 This skill reminds you to update backlog.org before commits or when finishing significant work. The backlog should reflect reality BEFORE the commit is made.
 
+## Prerequisites
+
+**Before triggering, check that `backlog.org` exists in the project root.**
+
+If `backlog.org` does not exist, do NOT trigger this skill. The project hasn't been
+set up with the backlog system yet. Silently skip - don't suggest setup or explain
+why the skill isn't running. Just proceed with the commit normally.
+
 ## When to Offer This Workflow
 
-**Trigger conditions:**
+**Trigger conditions (only if `backlog.org` exists):**
 - About to run `git commit` or create a commit
 - Exiting plan mode after completing implementation
 - User says "done", "finished", "let's commit", "wrap up"

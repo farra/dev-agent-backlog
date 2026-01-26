@@ -7,6 +7,14 @@ description: Ensures Claude Tasks are cross-referenced in backlog.org. Triggers 
 
 This skill ensures Claude Tasks are cross-referenced in backlog.org. The backlog is the universal hub - humans read it directly, agents follow links to their native primitives.
 
+## Prerequisites
+
+**Before triggering, check that `backlog.org` exists in the project root.**
+
+If `backlog.org` does not exist, do NOT trigger this skill. The project hasn't been
+set up with the backlog system yet. Silently skip - Claude Tasks can still be used
+normally, they just won't be synced to a backlog.
+
 ## Core Principle
 
 **Sync means cross-references, not content replication.**

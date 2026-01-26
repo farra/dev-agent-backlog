@@ -7,6 +7,21 @@ description: Proactively suggest creating a design document when discussing sign
 
 This skill helps identify when a design document should be created and guides the process.
 
+## Prerequisites
+
+**Before triggering, check that the project has been set up with the backlog system.**
+
+Look for either:
+- `backlog.org` in the project root, OR
+- `docs/design/` directory exists
+
+If neither exists, do NOT proactively trigger this skill. The project hasn't been
+set up with the backlog system yet. Silently skip - don't suggest setup or explain
+why the skill isn't running.
+
+**Exception:** If the user explicitly asks to "create a design doc" or similar, you
+may suggest running `/backlog:setup` first to initialize the system.
+
 ## When to Offer This
 
 **Trigger conditions for NEW design doc:**

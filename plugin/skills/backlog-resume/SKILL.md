@@ -7,9 +7,18 @@ description: Check for in-progress work on session start. Use when beginning a n
 
 This skill checks for in-progress work when starting a new session, implementing the "hook pattern" from gastown - if there's work on your hook, you should run it.
 
+## Prerequisites
+
+**Before triggering, check that `backlog.org` exists in the project root.**
+
+If `backlog.org` does not exist, do NOT trigger this skill. The project hasn't been
+set up with the backlog system yet. Silently skip - don't suggest setup or explain
+why the skill isn't running.
+
 ## When to Offer This Workflow
 
 **Trigger conditions:**
+- `backlog.org` exists in the project root, AND
 - Starting a new session in a project with `backlog.org`
 - User asks "what was I working on?", "resume", "continue"
 - User says "where did I leave off?"
