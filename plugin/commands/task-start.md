@@ -21,7 +21,7 @@ Look for the task in backlog.org under `* Current WIP` > `** Active`.
 From the task entry in backlog.org:
 - Read any existing progress notes
 - Check `:HANDOFF:` property for notes from previous session
-- Follow the `:SOURCE:` link to the canonical location
+- Follow the `:DESIGN:` link to the design doc (if present)
 - Read the full task description and related context
 
 **If `:HANDOFF:` has content, display prominently:**

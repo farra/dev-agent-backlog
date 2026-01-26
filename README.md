@@ -111,28 +111,19 @@ Draft → Review → Accepted → Active → Complete
 ### Task Lifecycle
 
 ```
-Design Doc                    Backlog
-┌──────────────────┐          ┌──────────────────┐
-│ ** TODO [ID]     │─checkout→│ *** TODO [ID]    │
-│                  │          │ :SOURCE: link    │
-└──────────────────┘          │ progress notes   │
-                              └────────┬─────────┘
-                                       │ work
-                                       ▼
-                              ┌──────────────────┐
-                              │ *** DONE [ID]    │
-                              └────────┬─────────┘
-                                       │ reconcile
-                                       ▼
-┌──────────────────┐          ┌──────────────────┐
-│ ** DONE [ID]     │←─────────│ (removed)        │
-│ :VERSION: v1.0   │          └──────────────────┘
-└──────────────────┘
+                        backlog.org (hub)
+                              │
+         ┌────────────┬───────┴───────┬────────────┐
+         ▼            ▼               ▼            ▼
+    Design Doc    Claude Task    GitHub Issue    Bead
+    :DESIGN:      :CLAUDE_TASK:  :GITHUB:        :BEAD:
 ```
 
-1. **Checkout**: Copy task to backlog Active section with `:SOURCE:` link
-2. **Work**: Add progress notes under the task
-3. **Reconcile**: Mark DONE in design doc, remove from backlog
+backlog.org is a human-readable hub linking to tasks wherever they live.
+
+1. **Queue**: Add task to backlog with link property (`:DESIGN:`, `:GITHUB:`, etc.)
+2. **Work**: Add progress notes, update `:HANDOFF:` for session continuity
+3. **Complete**: Reconcile back to source (design doc, GitHub, etc.) and remove from backlog
 
 ## Getting Started
 
@@ -243,8 +234,13 @@ Install the plugin once, use in any project:
 
 ### Task Properties
 
-Tasks in the backlog track:
-- `:SOURCE:` - Link to canonical location in design doc
+Tasks in the backlog can link to multiple sources (all optional):
+- `:DESIGN:` - Link to canonical location in design doc
+- `:CLAUDE_TASK:` - Link to Claude Task for cross-session coordination
+- `:GITHUB:` - Link to GitHub issue
+- `:BEAD:` - Link to Bead reference
+
+Tasks also track:
 - `:HANDOFF:` - Notes for next session (what to try, where stuck)
 - `:WORKED_BY:` - Who has worked on this (claude-code, human)
 

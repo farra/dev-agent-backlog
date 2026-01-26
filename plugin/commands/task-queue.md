@@ -25,7 +25,7 @@ Queue task **$ARGUMENTS** into the backlog.org Active section.
 ```org
 *** TODO [TASK-ID] Task Title
 :PROPERTIES:
-:SOURCE: [[file:docs/design/NNN-doc.org::*heading][TASK-ID in doc.org]]
+:DESIGN: [[file:docs/design/NNN-doc.org::*heading][TASK-ID in doc.org]]
 :EFFORT: <from source>
 :HANDOFF:
 :WORKED_BY:

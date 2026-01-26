@@ -35,6 +35,17 @@ Valid values for the =#+STATUS:= header field in design documents.
 
 Defined in =org-setup.org=: =TODO= → =WIP= → =HOLD= | =DONE=
 
+* Task Link Properties
+
+Backlog tasks can link to multiple sources (all optional):
+
+| Property       | Links to                              |
+|----------------+---------------------------------------|
+| =:DESIGN:=     | Design doc task definition            |
+| =:CLAUDE_TASK:= | Claude Task for agent coordination   |
+| =:GITHUB:=     | GitHub issue                          |
+| =:BEAD:=       | Bead reference                        |
+
 * Related Files
 
 | File                   | Purpose                         |

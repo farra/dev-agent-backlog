@@ -33,7 +33,7 @@ If work relates to an Active task, add progress notes under that task:
 ```org
 *** TODO [PROJECT-NNN-XX] Task title
 :PROPERTIES:
-:SOURCE: [[file:...][...]]
+:DESIGN: [[file:...][...]]
 :END:
 
 Previous notes...

@@ -68,21 +68,24 @@ Run this while point is on a TODO headline in a design doc."
       (unless (re-search-forward "^\\*\\* Active" nil t)
         (user-error "Could not find '** Active' section in %s" dab-backlog-file))
       (org-end-of-subtree)
-      (insert (format "\n\n*** TODO %s\n:PROPERTIES:\n:SOURCE: %s%s\n:END:\n\n"
+      (insert (format "\n\n*** TODO %s\n:PROPERTIES:\n:DESIGN: %s%s\n:END:\n\n"
                       heading
                       source-link
                       (if effort (format "\n:EFFORT: %s" effort) "")))
       (message "Queued %s into %s" task-id dab-backlog-file))))
 
 ;;;###autoload
-(defun dab-goto-source ()
-  "Jump to the source of the current task via its :SOURCE: property."
+(defun dab-goto-design ()
+  "Jump to the design doc of the current task via its :DESIGN: property."
   (interactive)
-  (let ((source (org-entry-get nil "SOURCE")))
-    (unless source
-      (user-error "No :SOURCE: property found"))
-    (when (string-match "\\[\\[\\([^]]+\\)\\]" source)
-      (org-link-open-from-string (match-string 0 source)))))
+  (let ((design (org-entry-get nil "DESIGN")))
+    (unless design
+      (user-error "No :DESIGN: property found"))
+    (when (string-match "\\[\\[\\([^]]+\\)\\]" design)
+      (org-link-open-from-string (match-string 0 design)))))
+
+;; Alias for backwards compatibility
+(defalias 'dab-goto-source 'dab-goto-design)
 
 (provide 'workflow-commands)
 ;;; workflow-commands.el ends here

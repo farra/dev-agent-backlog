@@ -31,7 +31,7 @@ Before (in Active):
 ```org
 *** TODO [DAB-001-01] Task title
 :PROPERTIES:
-:SOURCE: [[file:...][...]]
+:DESIGN: [[file:...][...]]
 :EFFORT: M
 :END:
 ```
@@ -40,7 +40,7 @@ After (in Blocked):
 ```org
 *** TODO [DAB-001-01] Task title
 :PROPERTIES:
-:SOURCE: [[file:...][...]]
+:DESIGN: [[file:...][...]]
 :EFFORT: M
 :REASON: Waiting for dependency release
 :END:

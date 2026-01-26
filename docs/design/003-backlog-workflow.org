@@ -36,7 +36,7 @@ docs as the source of truth.
 ** Active
 *** TODO [PROJECT-NNN-XX] Task title
 :PROPERTIES:
-:SOURCE: [[file:docs/design/NNN-doc.org::*heading][NNN in doc.org]]
+:DESIGN: [[file:docs/design/NNN-doc.org::*heading][NNN in doc.org]]
 :EFFORT: M
 :END:
 
@@ -45,7 +45,7 @@ Progress notes here.
 ** Blocked
 *** TODO [PROJECT-NNN-YY] Blocked task
 :PROPERTIES:
-:SOURCE: [[file:...][...]]
+:DESIGN: [[file:...][...]]
 :REASON: Waiting for X
 :END:
 
@@ -63,7 +63,7 @@ Progress notes here.
 Design Doc                    Backlog
 ┌──────────────────┐          ┌──────────────────┐
 │ ** TODO [ID]     │─checkout→│ *** TODO [ID]    │
-│                  │          │ :SOURCE: link    │
+│                  │          │ :DESIGN: link    │
 └──────────────────┘          │ progress notes   │
                               └────────┬─────────┘
                                        │ work
@@ -86,7 +86,7 @@ When starting work on a task:
 
 1. Find task in design doc by ID
 2. Copy to =backlog.org= under =** Active=
-3. Add =:SOURCE:= property linking back
+3. Add =:DESIGN:= property linking back
 4. Copy =:EFFORT:= if present
 
 ** Work
@@ -112,7 +112,7 @@ When task is complete:
 
 | Property | Purpose                         |
 |----------+---------------------------------|
-| SOURCE   | Link to canonical task location |
+| DESIGN   | Link to design doc task         |
 | EFFORT   | Estimated time                  |
 | REASON   | Why task is blocked             |
 

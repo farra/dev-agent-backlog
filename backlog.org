@@ -9,7 +9,7 @@ Active tasks checked out from design docs.
 
 *** TODO [DAB-011-06] Test plugin locally                                 :p1:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-06 in 011-plugin-architecture.org]]
+:DESIGN: [[file:docs/design/011-plugin-architecture.org::*Tasks][DAB-011-06 in 011-plugin-architecture.org]]
 :EFFORT: M
 :END:
 
@@ -31,7 +31,7 @@ Use =claude --plugin-dir ./plugin= to test all commands and skills.
 
 *** TODO [PROJECT-010-01] Update /new-design-doc command                  :p1:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-01 in 010-design-doc-metadata.org]]
+:DESIGN: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-01 in 010-design-doc-metadata.org]]
 :EFFORT: S
 :HANDOFF:
 :WORKED_BY:
@@ -41,7 +41,7 @@ Remove number ranges table, read categories from README.org.
 
 *** TODO [PROJECT-010-02] Update template with CATEGORY field             :p1:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-02 in 010-design-doc-metadata.org]]
+:DESIGN: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-02 in 010-design-doc-metadata.org]]
 :EFFORT: S
 :HANDOFF:
 :WORKED_BY:
@@ -51,7 +51,7 @@ Ensure 000-template.org has #+CATEGORY: in header.
 
 *** TODO [PROJECT-010-03] Backfill CATEGORY on existing docs              :p2:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-03 in 010-design-doc-metadata.org]]
+:DESIGN: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-03 in 010-design-doc-metadata.org]]
 :EFFORT: S
 :HANDOFF:
 :WORKED_BY:
@@ -61,7 +61,7 @@ Add #+CATEGORY: to docs 001-009.
 
 *** TODO [PROJECT-010-04] Update CLAUDE.md if needed                      :p2:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-04 in 010-design-doc-metadata.org]]
+:DESIGN: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-04 in 010-design-doc-metadata.org]]
 :EFFORT: S
 :HANDOFF:
 :WORKED_BY:
@@ -71,7 +71,7 @@ Verify CLAUDE.md describes category system correctly.
 
 *** TODO [PROJECT-010-05] Create README.org with config data              :p1:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-05 in 010-design-doc-metadata.org]]
+:DESIGN: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-05 in 010-design-doc-metadata.org]]
 :EFFORT: S
 :HANDOFF:
 :WORKED_BY:
@@ -81,7 +81,7 @@ Create README.org with project prefix, categories, statuses.
 
 *** TODO [PROJECT-010-06] Update README.md                                :p2:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-06 in 010-design-doc-metadata.org]]
+:DESIGN: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-06 in 010-design-doc-metadata.org]]
 :EFFORT: S
 :HANDOFF:
 :WORKED_BY:
@@ -91,7 +91,7 @@ Remove number ranges table from README.md.
 
 *** TODO [PROJECT-010-07] Update /task-queue to set doc status to Active  :p1:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-07 in 010-design-doc-metadata.org]]
+:DESIGN: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-07 in 010-design-doc-metadata.org]]
 :EFFORT: S
 :HANDOFF:
 :WORKED_BY:
@@ -101,7 +101,7 @@ Set #+STATUS: Active when queuing tasks.
 
 *** TODO [PROJECT-010-08] Update /queue-design-doc to set status to Active :p1:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-08 in 010-design-doc-metadata.org]]
+:DESIGN: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-08 in 010-design-doc-metadata.org]]
 :EFFORT: S
 :HANDOFF:
 :WORKED_BY:
@@ -111,7 +111,7 @@ Set #+STATUS: Active when queuing all tasks from a doc.
 
 *** TODO [PROJECT-010-09] Update /task-complete to check for doc completion :p1:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-09 in 010-design-doc-metadata.org]]
+:DESIGN: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-09 in 010-design-doc-metadata.org]]
 :EFFORT: S
 :HANDOFF:
 :WORKED_BY:
@@ -121,7 +121,7 @@ Check if all tasks DONE and prompt to mark doc Complete.
 
 *** TODO [PROJECT-010-10] Create /design-review command                   :p1:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-10 in 010-design-doc-metadata.org]]
+:DESIGN: [[file:docs/design/010-design-doc-metadata.org::*Tasks][PROJECT-010-10 in 010-design-doc-metadata.org]]
 :EFFORT: M
 :HANDOFF:
 :WORKED_BY:
@@ -146,7 +146,7 @@ This is the *working surface* for dev-agent-backlog development.
   Design Docs (canonical)              backlog.org (working surface)
   ┌─────────────────────────┐         ┌─────────────────────────┐
   │ ** TODO [DAB-001-01]    │─checkout→ *** TODO [DAB-001-01]  │
-  │                         │         │ :SOURCE: [[file:...]]  │
+  │                         │         │ :DESIGN: [[file:...]]  │
   └─────────────────────────┘         │ progress notes...      │
                                       └───────────┬────────────┘
                                                   │ work
@@ -164,7 +164,7 @@ This is the *working surface* for dev-agent-backlog development.
 
 ** Workflow
 
-1. *Checkout*: Copy task to Active, add =:SOURCE:= link
+1. *Checkout*: Copy task to Active, add =:DESIGN:= link
 2. *Work*: Add progress notes here
 3. *Reconcile*: Update design doc, remove from here
 
@@ -173,7 +173,7 @@ This is the *working surface* for dev-agent-backlog development.
 #+begin_example
 *** TODO [DAB-001-01] Task title
 :PROPERTIES:
-:SOURCE: [[file:docs/design/001-system-overview.org::*Tasks][001 Tasks]]
+:DESIGN: [[file:docs/design/001-system-overview.org::*Tasks][001 Tasks]]
 :EFFORT: M
 :END:
 
@@ -226,7 +226,7 @@ Progress notes here.
     (org-end-of-subtree)
     (insert (format "\n\n*** TODO %s
 :PROPERTIES:
-:SOURCE: %s%s
+:DESIGN: %s%s
 :END:
 
 " heading source-link (if effort (format "\n:EFFORT: %s" effort) "")))

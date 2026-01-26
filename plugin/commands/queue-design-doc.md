@@ -83,7 +83,7 @@ Add to `** Active` section:
 ```org
 *** TODO [TASK-ID] Task Title                                            :tags:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/NNN-doc.org::*Tasks][TASK-ID in NNN-doc.org]]
+:DESIGN: [[file:docs/design/NNN-doc.org::*Tasks][TASK-ID in NNN-doc.org]]
 :EFFORT: <from source>
 :HANDOFF:
 :WORKED_BY:

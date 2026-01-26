@@ -18,20 +18,22 @@ There are no build, test, or lint commands - this is a documentation/workflow te
 
 ## Architecture
 
-### Core Pattern: Design Doc → Backlog → Reconcile
+### Core Pattern: Backlog as Hub
 
 ```
-Design Doc (canonical)          Backlog (working surface)
-** TODO [ID] Task              *** TODO [ID] Task
-                    ─checkout→  :SOURCE: [[file:...]]
-                                progress notes...
-** DONE [ID] Task              ←reconcile─ (removed)
+                        backlog.org (hub/glue)
+                              │
+         ┌────────────┬───────┴───────┬────────────┐
+         ▼            ▼               ▼            ▼
+    Design Doc    Claude Task    GitHub Issue    Bead
+    :DESIGN:      :CLAUDE_TASK:  :GITHUB:        :BEAD:
 ```
 
-1. Tasks originate in design docs (`docs/design/*.org`)
-2. Active tasks are "checked out" to `backlog.org` with `:SOURCE:` links
-3. Progress notes accumulate in backlog during work
-4. Completed tasks are reconciled back to design docs
+backlog.org is a human-readable hub linking to tasks wherever they live:
+1. Tasks can originate in design docs, GitHub issues, or Claude Tasks
+2. Active tasks are tracked in `backlog.org` with link properties
+3. Progress notes and `:HANDOFF:` accumulate in backlog during work
+4. Completed tasks are reconciled back to their source (if applicable)
 
 ### Key Files
 
@@ -83,8 +85,13 @@ document frontmatter to classify documents. Valid categories are defined in
 
 ## Task Properties
 
-### Backlog Entry Properties
-- `:SOURCE:` - Link to canonical location in design doc
+### Backlog Entry Link Properties (all optional)
+- `:DESIGN:` - Link to canonical location in design doc
+- `:CLAUDE_TASK:` - Link to Claude Task for cross-session coordination
+- `:GITHUB:` - Link to GitHub issue
+- `:BEAD:` - Link to Bead reference
+
+### Backlog Entry Metadata Properties
 - `:EFFORT:` - Estimated effort (S, M, L or time)
 - `:HANDOFF:` - Notes for next session (what to try, where stuck)
 - `:WORKED_BY:` - Who has worked on this (claude-code, human)

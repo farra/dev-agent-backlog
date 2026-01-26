@@ -55,17 +55,18 @@ The setup will:
 ## Workflow
 
 ```
-Design Doc (canonical)          Backlog (working surface)
-** TODO [ID] Task              *** TODO [ID] Task
-                    ─checkout→  :SOURCE: [[file:...]]
-                                progress notes...
-** DONE [ID] Task              ←reconcile─ (removed)
+                        backlog.org (hub)
+                              │
+         ┌────────────┬───────┴───────┬────────────┐
+         ▼            ▼               ▼            ▼
+    Design Doc    Claude Task    GitHub Issue    Bead
+    :DESIGN:      :CLAUDE_TASK:  :GITHUB:        :BEAD:
 ```
 
-1. **Design docs** (`docs/design/*.org`) are the source of truth
-2. **Backlog** (`backlog.org`) is the working surface
-3. Tasks are "checked out" to backlog with `:SOURCE:` links
-4. Completed tasks are reconciled back to design docs
+1. **backlog.org** is a human-readable hub linking to tasks wherever they live
+2. Tasks can originate from design docs, GitHub issues, or Claude Tasks
+3. Link properties (`:DESIGN:`, `:GITHUB:`, etc.) connect to canonical sources
+4. Completed tasks are reconciled back to their source
 
 ## Task ID Format
 
