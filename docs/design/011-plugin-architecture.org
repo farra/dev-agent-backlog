@@ -1,6 +1,6 @@
 #+TITLE: 011 - Claude Code Plugin Architecture
 #+AUTHOR: dev-agent-backlog
-#+STATUS: Draft
+#+STATUS: Active
 #+CATEGORY: infra
 #+CREATED: [2026-01-26]
 #+LAST_MODIFIED: [2026-01-26]

@@ -1,0 +1,10 @@
+{
+  "name": "backlog",
+  "description": "Design doc driven task management for human-agent collaboration",
+  "version": "1.0.0",
+  "author": {
+    "name": "J. Aaron Farr"
+  },
+  "repository": "https://github.com/farra/dev-agent-backlog",
+  "homepage": "https://github.com/farra/dev-agent-backlog"
+}
