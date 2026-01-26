@@ -343,22 +343,49 @@ When queuing and starting a single task:
 → Begin work
 #+end_example
 
-** Backlog as Sync Point
+** Backlog as Universal Hub
 
-The backlog is the central sync point connecting all representations:
+The backlog is the central hub—tasks can originate anywhere (or nowhere):
 
 #+begin_example
-                    backlog.org
+                    backlog.org (hub)
                         │
         ┌───────────────┼───────────────┐
         │               │               │
         ▼               ▼               ▼
-   Design Doc      Claude Task     Claude Plan
-   :DESIGN:        :CLAUDE_TASK:   (in context)
-        │               │               │
-        └───────────────┴───────────────┘
-                        │
-              All point to same work
+   Design Doc      Claude Task     GitHub Issue
+   :DESIGN:        :CLAUDE_TASK:   :GITHUB:
+#+end_example
+
+*** Task Origins
+
+Tasks in backlog.org can come from:
+
+| Origin         | Link Property   | Example                          |
+|----------------+-----------------+----------------------------------|
+| Design doc     | =:DESIGN:=      | Planned feature work             |
+| GitHub issue   | =:GITHUB:=      | Bug report, external request     |
+| Claude Task    | =:CLAUDE_TASK:= | Agent-created during execution   |
+| Direct entry   | (none)          | Ad-hoc work, quick fixes         |
+
+*All link properties are optional.* A task can have:
+- Multiple links (same task tracked in multiple systems)
+- One link (task originated somewhere specific)
+- No links (ad-hoc work added directly to backlog)
+
+*** Direct-to-Backlog Workflow
+
+For quick work that doesn't warrant a design doc:
+
+#+begin_example
+Human adds task directly to backlog.org:
+*** TODO Fix typo in README
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+When Claude starts work, skill adds :CLAUDE_TASK: link automatically.
+No design doc needed.
 #+end_example
 
 *** Sync Rules
