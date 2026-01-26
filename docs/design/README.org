@@ -36,6 +36,8 @@ its rationale, and any implementation tasks.
 | 009 | [[file:009-beads-features.org][Beads-Inspired Features]]  | Draft    |
 | 010 | [[file:010-design-doc-metadata.org][Categories and Status Fields]] | Active |
 | 011 | [[file:011-plugin-architecture.org][Claude Code Plugin Architecture]] | Active |
+| 012 | [[file:012-claude-tasks-integration.org][Claude Tasks Integration]] | Complete |
+| 013 | [[file:013-reconciliation-commands.org][Reconciliation Commands]] | Draft |
 
 ** Templates
 

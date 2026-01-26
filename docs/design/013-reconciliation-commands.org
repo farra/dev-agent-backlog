@@ -1,0 +1,285 @@
+#+TITLE: 013 - Reconciliation Commands
+#+AUTHOR: Claude Code
+#+STATUS: Draft
+#+CATEGORY: hygiene
+#+CREATED: [2026-01-26]
+#+LAST_MODIFIED: [2026-01-26]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+Hygiene commands to detect and fix drift between design docs, backlog.org, and
+actual implementation state. These commands cross-reference git log, CHANGELOG.md,
+and source code to surface stale tasks and inconsistent statuses, then guide the
+user through resolution.
+
+* Context
+
+Over time, the following drift patterns emerge:
+
+1. **Stale backlog entries** - Tasks remain in backlog.org after work was completed
+   elsewhere (direct commits, different sessions, human intervention)
+
+2. **Outdated design doc status** - A design doc shows =#+STATUS: Active= but all
+   its tasks were completed long ago
+
+3. **Ghost tasks** - Tasks marked TODO in design docs that were actually implemented
+   but never marked DONE (evidenced by commits, changelog entries, or code presence)
+
+4. **Orphan backlog entries** - Backlog tasks whose =:DESIGN:= link points to a
+   task that was removed or renumbered in the source doc
+
+5. **Inconsistent states** - A task is DONE in backlog but TODO in design doc
+   (or vice versa)
+
+6. **Stale README.org index** - The =docs/design/README.org= index is missing docs,
+   has orphan entries, or shows outdated status values
+
+The current workflow assumes disciplined use of =/task-complete= and =/task-queue=,
+but in practice work happens outside this flow. These commands restore consistency.
+
+* Goals and Non-Goals
+
+** Goals
+
+- Detect all forms of drift between backlog.org, design docs, and reality
+- Cross-reference with git log, CHANGELOG.md, and source code for evidence
+- Automatically fix clear-cut cases (e.g., orphan links, obvious completions)
+- Present ambiguous cases interactively for human decision
+- Support parallel processing via subagents for large backlogs
+- Be strict about status: partially-implemented docs stay partial
+
+** Non-Goals
+
+- Automatic task creation (that's what =/new-design-doc= and =/task-queue= do)
+- Deep semantic analysis of code (keyword/pattern matching is sufficient)
+- Modification of git history or CHANGELOG.md (those are source of truth)
+
+* Proposal
+
+** Overview
+
+Two complementary commands:
+
+1. **/reconcile-design-docs** - Scans all design docs, cross-references with
+   evidence sources, updates task/doc statuses, reports findings
+
+2. **/reconcile-backlog** - Scans backlog.org, validates links, checks for stale
+   entries, removes orphans, reports findings
+
+Both commands follow the same pattern:
+1. Gather evidence (parallel subagents for speed)
+2. Classify findings (auto-fixable vs. needs-review)
+3. Apply auto-fixes with user confirmation
+4. Walk through ambiguous items interactively
+
+** Design
+
+*** Evidence Sources
+
+| Source       | Evidence Type                     | Confidence |
+|--------------+-----------------------------------+------------|
+| Git log      | Commit messages mentioning task ID | High       |
+| CHANGELOG.md | Entry mentioning task/feature     | High       |
+| Source code  | Implementation matching task desc | Medium     |
+| File dates   | Design doc last modified          | Low        |
+
+*** /reconcile-design-docs Command
+
+Process:
+
+1. *Enumerate* all design docs in =docs/design/*.org=
+2. *Filter* to docs with status Draft, Review, Accepted, or Active
+3. *For each doc* (parallel via subagents if >3 docs):
+   a. Parse all =** TODO=, =** WIP=, =** HOLD= tasks
+   b. For each incomplete task:
+      - Search git log for task ID mentions
+      - Search CHANGELOG.md for related entries
+      - Check if described functionality exists in codebase
+   c. Classify task as: =confirmed-todo=, =likely-done=, =unclear=
+4. *Auto-fix* (with confirmation):
+   - Mark =likely-done= tasks as DONE with evidence notes
+   - Set doc status to Complete if all tasks resolved
+5. *Interactive review*:
+   - Present =unclear= tasks with gathered evidence
+   - Ask user to confirm status for each
+6. *Reconcile README.org index*:
+   - Compare actual files vs. README.org entries
+   - Add missing docs, update stale statuses, remove orphan entries
+7. *Report*:
+   - Summary of changes made
+   - List of docs that changed status
+   - README.org index updates
+   - Count of tasks by final state
+
+*** /reconcile-backlog Command
+
+Process:
+
+1. *Parse* backlog.org =* Current WIP= section
+2. *For each entry* in Active, Blocked, Up Next:
+   a. Validate =:DESIGN:= link (if present) - does target exist?
+   b. Check if task ID appears in git log as completed
+   c. Check CHANGELOG.md for completion evidence
+   d. Compare status with source doc (if linked)
+3. *Classify* entries as:
+   - =valid= - Links work, status consistent
+   - =orphan= - =:DESIGN:= link broken
+   - =stale= - Evidence suggests completed
+   - =inconsistent= - Status mismatch with source
+4. *Auto-fix* (with confirmation):
+   - Remove orphan entries (or offer to fix link)
+   - Mark stale entries for removal
+   - Sync inconsistent entries with source
+5. *Interactive review*:
+   - Present ambiguous entries
+   - Walk through status decisions
+6. *Report*:
+   - Entries removed/updated
+   - Remaining valid entries by section
+   - Warnings for entries lacking links
+
+*** Strictness Rules
+
+*Design Doc Status*:
+| All tasks DONE/HOLD | → | #+STATUS: Complete (prompt) |
+| Any task TODO/WIP   | → | #+STATUS: Active            |
+| No tasks at all     | → | Keep current status         |
+
+*Task Status* (only upgrade, never downgrade without evidence):
+- TODO → DONE requires: git commit, changelog entry, OR user confirmation
+- WIP → DONE requires: same as above
+- DONE → TODO: Never automatic (requires explicit user action)
+
+*** Subagent Strategy
+
+For reconcile-design-docs with many documents:
+- Spawn one Explore subagent per design doc (max 5 concurrent)
+- Each subagent: parse tasks, search evidence, return classifications
+- Main agent: aggregate results, apply fixes, handle interactive review
+
+*** Output Format
+
+#+begin_example
+## Reconciliation Report
+
+### Auto-Applied Changes
+- [DAB-003-02] Marked DONE (found in git log: abc123)
+- [DAB-005-01] Marked DONE (found in CHANGELOG v1.0.1)
+- docs/design/003-backlog-workflow.org → #+STATUS: Complete
+
+### Needs Review (3 items)
+
+#### [DAB-007-03] Queue all tasks from design doc
+Evidence:
+- Git log: No direct mentions
+- CHANGELOG: "Added /queue-design-doc command" (possible match?)
+- Source: .claude/commands/queue-design-doc.md exists
+
+Is this task complete? [y/n/skip]:
+
+...
+
+### Summary
+- Design docs checked: 12
+- Tasks reconciled: 8 (5 auto, 3 manual)
+- Status changes: 2 docs → Complete
+- Remaining unclear: 1
+#+end_example
+
+** Alternatives Considered
+
+*** Single unified command
+
+Rejected: Different mental models (doc-centric vs. backlog-centric) benefit from
+separate commands. Users often want to reconcile just one or the other.
+
+*** Fully automatic (no prompts)
+
+Rejected: Too risky. "Likely done" is not "certainly done" - human confirmation
+prevents false positives from removing legitimate TODOs.
+
+*** Dry-run only
+
+Rejected: Would require running twice (once to see, once to fix). The
+confirm-before-apply model gives visibility without requiring double execution.
+
+* Questions                                                      :questions:
+
+** DECIDED Should commands modify CHANGELOG.md?
+:PROPERTIES:
+:DECIDED: [2026-01-26]
+:END:
+
+No. CHANGELOG.md is a source of truth for what was released. Reconciliation reads
+from it but never writes to it. If a task was completed without a changelog entry,
+that's a process issue to address separately.
+
+** DECIDED How to handle tasks with no task ID?
+:PROPERTIES:
+:DECIDED: [2026-01-26]
+:END:
+
+Skip them for automatic reconciliation but report them as "untracked tasks" in the
+summary. These are candidates for the user to either add IDs to or remove.
+
+** OPEN Should /reconcile-backlog remove entries for completed design docs?
+
+If a design doc is marked Complete, should all its backlog entries be auto-removed?
+
+Options:
+- Yes: Clean slate, backlog reflects only active work
+- No: User might want historical reference
+- Prompt: Ask per-doc or globally
+
+Leaning toward: Yes with a summary of what was removed.
+
+* Tasks                                                              :tasks:
+
+** TODO [DAB-013-01] Create /reconcile-design-docs command            :p1:
+:PROPERTIES:
+:EFFORT: L
+:END:
+
+Implement the design doc reconciliation command following the process above.
+Include git log search, CHANGELOG.md parsing, and source code pattern matching.
+
+** TODO [DAB-013-02] Create /reconcile-backlog command                :p1:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+Implement the backlog reconciliation command. Focus on link validation, status
+consistency, and orphan detection.
+
+** TODO [DAB-013-03] Add subagent support for parallel processing     :p2:
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+When processing >3 design docs, spawn Explore subagents to gather evidence in
+parallel. Aggregate results in main agent.
+
+** TODO [DAB-013-04] Update CLAUDE.md with new commands               :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Add the two reconciliation commands to the Slash Commands section.
+
+** TODO [DAB-013-05] Add reconciliation to README.org index           :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Update docs/design/README.org with this design doc entry.
+
+* References
+
+- [[file:003-backlog-workflow.org][003 - Backlog Workflow]] - Defines checkout/reconcile pattern
+- [[file:010-design-doc-metadata.org][010 - Design Doc Metadata]] - Status lifecycle definitions
+- [[file:007-queue-design-doc.org][007 - Queue Design Doc]] - Task queuing workflow
+
+* Changelog
+
+- *2026-01-26:* Initial draft

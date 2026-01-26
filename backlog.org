@@ -189,60 +189,64 @@ Progress notes here.
 | [[file:docs/design/000-template.org][000-template.org]]        | Template for new design docs  |
 
 * Setup
+:PROPERTIES:
+:header-args:elisp: :results silent
+:END:
+
+** Load Workflow Commands
+
+Evaluate this block first with =C-c C-c=:
+
+#+begin_src elisp
+;; Load workflow-commands.el from project elisp directory
+(let ((elisp-dir (expand-file-name "elisp"
+                                   (file-name-directory (buffer-file-name)))))
+  (if (file-exists-p (expand-file-name "workflow-commands.el" elisp-dir))
+      (progn
+        (add-to-list 'load-path elisp-dir)
+        (require 'workflow-commands)
+        (message "Loaded backlog/ commands from %s" elisp-dir))
+    (user-error "workflow-commands.el not found in %s" elisp-dir)))
+#+end_src
 
 ** Emacs Agenda Configuration
 
-#+begin_src emacs-lisp :results silent
-(setq org-agenda-files
-      (file-expand-wildcards "path/to/project/docs/design/*.org"))
+#+begin_src elisp
+(unless (fboundp 'backlog/design-get-all-docs)
+  (user-error "Run the loader block above first"))
+(setq backlog/agenda-files (backlog/design-get-all-docs))
+(setq org-agenda-files backlog/agenda-files)
+(message "Added %d design docs to agenda" (length backlog/agenda-files))
 #+end_src
 
-** Task Queue Command
+** Available Commands
 
-#+begin_src emacs-lisp
-(defun dab-task-queue ()
-  "Queue the task at point into backlog.org Active section."
-  (interactive)
-  (unless (org-at-heading-p)
-    (user-error "Not on a heading"))
-  (let* ((source-file (buffer-file-name))
-         (heading (org-get-heading t t t t))
-         (task-id (when (string-match "\\[\\([A-Z]+-[0-9]+-[0-9]+\\)\\]" heading)
-                    (match-string 1 heading)))
-         (effort (org-entry-get nil "EFFORT"))
-         (source-link (format "[[file:%s::*%s][%s in %s]]"
-                              (file-relative-name source-file)
-                              (url-hexify-string heading)
-                              (or task-id "source")
-                              (file-name-nondirectory source-file)))
-         (backlog-file (expand-file-name "backlog.org"
-                         (locate-dominating-file source-file "backlog.org"))))
-    (unless task-id
-      (user-error "No task ID found in heading"))
-    (find-file backlog-file)
-    (goto-char (point-min))
-    (unless (re-search-forward "^\\*\\* Active" nil t)
-      (user-error "Could not find '** Active' section"))
-    (org-end-of-subtree)
-    (insert (format "\n\n*** TODO %s
-:PROPERTIES:
-:DESIGN: %s%s
-:END:
+After loading, these commands are available:
 
-" heading source-link (if effort (format "\n:EFFORT: %s" effort) "")))
-    (message "Queued %s into backlog.org" task-id)))
-#+end_src
+| Command                       | Description                          |
+|-------------------------------+--------------------------------------|
+| =M-x backlog/task-queue=        | Queue task at point into backlog.org |
+| =M-x backlog/goto-design=       | Jump to design doc via :DESIGN:      |
+| =M-x backlog/design-goto-doc=   | Jump to design doc by number         |
+| =M-x backlog/design-next-number= | Get next available doc number       |
+| =M-x backlog/design-status-report= | Summary of docs by status         |
+| =M-x backlog/design-category-report= | Summary of docs by category     |
 
 * Queries
+:PROPERTIES:
+:header-args:elisp: :results output
+:END:
+
+Execute any query with =C-c C-c= on the source block.
+Requires loading the Setup block first.
 
 ** Task Summary
 
-#+begin_src emacs-lisp :results output
-(let ((files (file-expand-wildcards
-              (expand-file-name "docs/design/[0-9]*.org"
-                                (file-name-directory (buffer-file-name)))))
-      (todo-count 0) (wip-count 0) (hold-count 0) (done-count 0))
-  (dolist (file files)
+#+begin_src elisp :results output
+(unless (fboundp 'backlog/design-get-all-docs)
+  (user-error "Run the loader block in Setup first"))
+(let ((todo-count 0) (wip-count 0) (hold-count 0) (done-count 0))
+  (dolist (file (backlog/design-get-all-docs))
     (with-temp-buffer
       (insert-file-contents file)
       (goto-char (point-min))
@@ -258,6 +262,7 @@ Progress notes here.
   (princ (format "  WIP:  %3d\n" wip-count))
   (princ (format "  HOLD: %3d\n" hold-count))
   (princ (format "  DONE: %3d\n" done-count))
+  (princ (format "  ─────────\n"))
   (princ (format "  Total: %d\n" (+ todo-count wip-count hold-count done-count))))
 #+end_src
 

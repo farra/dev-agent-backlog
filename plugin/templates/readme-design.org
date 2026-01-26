@@ -8,10 +8,105 @@ Each document captures a decision, its rationale, and implementation tasks.
 
 * Document Status
 
-See [[file:../../README.org][README.org]] for valid statuses and categories.
+| Status   | Meaning                                          |
+|----------+--------------------------------------------------|
+| Draft    | Under development, not ready for review          |
+| Review   | Ready for feedback                               |
+| Accepted | Approved, ready to implement                     |
+| Active   | Implementation in progress, some tasks complete  |
+| Complete | Fully implemented and verified                   |
+| Archived | No longer active (rejected, obsolete, abandoned) |
 
 * Documents
 
 | Doc | Title    | Status |
 |-----+----------+--------|
 | 000 | [[file:000-template.org][Template]] | N/A    |
+
+* Elisp Setup
+:PROPERTIES:
+:header-args:elisp: :results silent
+:END:
+
+Load the workflow commands. Evaluate this block first with =C-c C-c=:
+
+#+begin_src elisp
+;; Load workflow-commands.el from project elisp directory
+(let ((elisp-dir (expand-file-name "../../elisp"
+                                   (file-name-directory (buffer-file-name)))))
+  (if (file-exists-p (expand-file-name "workflow-commands.el" elisp-dir))
+      (progn
+        (add-to-list 'load-path elisp-dir)
+        (require 'workflow-commands)
+        (message "Loaded backlog/ commands from %s" elisp-dir))
+    (user-error "workflow-commands.el not found in %s" elisp-dir)))
+#+end_src
+
+** Available Commands
+
+After loading, these commands are available:
+
+| Command                          | Description                             |
+|----------------------------------+-----------------------------------------|
+| =M-x backlog/design-sync-status=   | Update table statuses from actual files |
+| =M-x backlog/design-stale-check=   | Find where README ≠ actual status       |
+| =M-x backlog/design-verify-links=  | Ensure all linked files exist           |
+| =M-x backlog/design-find-unlisted= | Find .org files not in this index       |
+| =M-x backlog/design-goto-doc=      | Jump to a doc by its number             |
+| =M-x backlog/design-next-number=   | Get next available document number      |
+| =M-x backlog/design-status-report= | Show count of docs by status            |
+| =M-x backlog/design-category-report= | Show count of docs by category        |
+| =M-x backlog/task-queue=           | Queue task at point into backlog.org    |
+
+** Quick Actions
+
+Evaluate any of these with =C-c C-c= (requires loading above first):
+
+*** Sync statuses from files
+#+begin_src elisp
+(unless (fboundp 'backlog/design-sync-status)
+  (user-error "Run the loader block above first"))
+(backlog/design-sync-status)
+#+end_src
+
+*** Check for stale entries
+#+begin_src elisp
+(unless (fboundp 'backlog/design-stale-check)
+  (user-error "Run the loader block above first"))
+(backlog/design-stale-check)
+#+end_src
+
+*** Find unlisted docs
+#+begin_src elisp
+(unless (fboundp 'backlog/design-find-unlisted)
+  (user-error "Run the loader block above first"))
+(backlog/design-find-unlisted)
+#+end_src
+
+*** Verify all links
+#+begin_src elisp
+(unless (fboundp 'backlog/design-verify-links)
+  (user-error "Run the loader block above first"))
+(backlog/design-verify-links)
+#+end_src
+
+*** Status report
+#+begin_src elisp
+(unless (fboundp 'backlog/design-status-report)
+  (user-error "Run the loader block above first"))
+(backlog/design-status-report)
+#+end_src
+
+*** Category report
+#+begin_src elisp
+(unless (fboundp 'backlog/design-category-report)
+  (user-error "Run the loader block above first"))
+(backlog/design-category-report)
+#+end_src
+
+*** Next available doc number
+#+begin_src elisp
+(unless (fboundp 'backlog/design-next-number)
+  (user-error "Run the loader block above first"))
+(backlog/design-next-number)
+#+end_src

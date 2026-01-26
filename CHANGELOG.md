@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `claude-tasks-sync` skill to ensure Claude Tasks are cross-referenced in backlog.org
 - `:CLAUDE_TASK:` property for linking backlog entries to Claude Tasks
 - `/queue-design-doc` now creates Claude Task List and enters plan mode
+- `/backlog:reconcile-design-docs` command to cross-reference design doc tasks with git/changelog/code evidence
+- `/backlog:reconcile-backlog` command to validate backlog links, remove stale entries, sync statuses
+- Elisp maintenance helpers in templates (loader pattern for `workflow-commands.el`)
 
 ### Changed
 - Renamed `:SOURCE:` property to `:DESIGN:` (now optional, for hub model)
@@ -19,11 +22,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `backlog-resume` surfaces Claude Task links when resuming work
 - All link properties (`:DESIGN:`, `:CLAUDE_TASK:`, `:GITHUB:`, `:BEAD:`) are optional
 - Tasks can now originate directly in backlog.org without a design doc
+- **Elisp prefix renamed**: `dab-` → `backlog/` (e.g., `backlog/task-queue`, `backlog/goto-design`)
+- Elisp templates now use loader pattern requiring `workflow-commands.el`
+- Dogfooding: `.claude/` and `templates/` are now symlinks to `plugin/`
 
 ### Documentation
 - Updated project framing: two core pillars (backlog as hub, design docs for planning)
 - Added composability documentation (design-review vs queue-design-doc workflows)
 - Clarified sync means cross-references, not content replication
+- Design doc 013: Reconciliation Commands
 
 ## [2.0.0] - 2026-01-26
 
@@ -83,6 +90,6 @@ If upgrading from 1.x:
 - Backlog working surface with checkout/reconcile pattern
 - Slash commands: `/task-queue`, `/task-start`, `/task-complete`, `/task-hold`, `/new-design-doc`
 - Proactive skills: `backlog-update`, `new-design-doc`
-- Emacs integration with `dab-task-queue` and `dab-goto-source`
+- Emacs integration with `backlog/task-queue` and `backlog/goto-design`
 - Bootstrap script (`bin/init.sh`) for new projects
 - Design docs 001-004 documenting system architecture

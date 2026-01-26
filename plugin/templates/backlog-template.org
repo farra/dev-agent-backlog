@@ -1,4 +1,4 @@
-#+TITLE: Project Backlog
+#+TITLE: PROJECT Backlog
 #+SETUPFILE: ./org-setup.org
 
 * Current WIP
@@ -6,7 +6,7 @@
 Active tasks checked out from design docs.
 
 ** Active
-# Queue tasks here with /task-queue or M-x dab-task-queue
+# Queue tasks here with /task-queue or M-x backlog/task-queue
 
 ** Blocked
 # Tasks waiting on external dependency
@@ -59,15 +59,182 @@ This is the *working surface* for development.
 - =:HANDOFF:= - Notes for next session (what to try, where stuck)
 - =:WORKED_BY:= - Who has worked on this (claude-code, human)
 
-* Setup
+* Elisp Setup
+:PROPERTIES:
+:header-args:elisp: :results silent
+:END:
 
-See org-setup.org for shared configuration.
+Load the workflow commands. Evaluate this block first with =C-c C-c=:
+
+#+begin_src elisp
+;; Load workflow-commands.el from project elisp directory
+(let ((elisp-dir (expand-file-name "elisp"
+                                   (file-name-directory (buffer-file-name)))))
+  (if (file-exists-p (expand-file-name "workflow-commands.el" elisp-dir))
+      (progn
+        (add-to-list 'load-path elisp-dir)
+        (require 'workflow-commands)
+        (message "Loaded backlog/ commands from %s" elisp-dir))
+    (user-error "workflow-commands.el not found in %s" elisp-dir)))
+#+end_src
+
+** Available Commands
+
+After loading, these commands are available:
+
+| Command                       | Description                          |
+|-------------------------------+--------------------------------------|
+| =M-x backlog/task-queue=        | Queue task at point into backlog.org |
+| =M-x backlog/goto-design=       | Jump to design doc via :DESIGN:      |
+| =M-x backlog/design-goto-doc=   | Jump to design doc by number         |
+| =M-x backlog/design-next-number= | Get next available doc number       |
+| =M-x backlog/design-status-report= | Summary of docs by status         |
+| =M-x backlog/design-category-report= | Summary of docs by category     |
+
+** Emacs Agenda Configuration
+
+Add design docs to org-agenda (evaluate after loading above):
+
+#+begin_src elisp
+(unless (fboundp 'backlog/design-get-all-docs)
+  (user-error "Run the loader block above first"))
+(setq backlog/agenda-files (backlog/design-get-all-docs))
+(setq org-agenda-files backlog/agenda-files)
+(message "Added %d design docs to agenda" (length backlog/agenda-files))
+#+end_src
+
+** Custom Agenda Views
+
+#+begin_src elisp
+(unless (fboundp 'backlog/design-get-all-docs)
+  (user-error "Run the loader block above first"))
+(setq org-agenda-custom-commands
+      '(("d" . "Design Docs")
+        ("do" "Open Questions" tags-todo "questions"
+         ((org-agenda-files backlog/agenda-files)
+          (org-agenda-sorting-strategy '(priority-down))))
+        ("dt" "All Tasks" tags-todo "tasks"
+         ((org-agenda-files backlog/agenda-files)))
+        ("dw" "WIP Tasks" tags-todo "tasks/WIP"
+         ((org-agenda-files backlog/agenda-files)))
+        ("dp" "Priority Tasks" tags-todo "tasks+p0|tasks+p1"
+         ((org-agenda-files backlog/agenda-files)))))
+(message "Custom agenda views configured: C-c a d")
+#+end_src
+
+* Queries
+:PROPERTIES:
+:header-args:elisp: :results output
+:END:
+
+Execute any query with =C-c C-c= on the source block.
+Requires loading the Elisp Setup block first.
+
+** Open Questions
+
+#+begin_src elisp :results output
+(unless (fboundp 'backlog/design-get-all-docs)
+  (user-error "Run the loader block in Elisp Setup first"))
+(dolist (file (backlog/design-get-all-docs))
+  (with-temp-buffer
+    (insert-file-contents file)
+    (goto-char (point-min))
+    (let ((doc-name (file-name-nondirectory file))
+          (questions nil))
+      (while (re-search-forward "^\\*\\* OPEN \\(.+\\)" nil t)
+        (push (match-string 1) questions))
+      (when questions
+        (princ (format "\n%s:\n" doc-name))
+        (dolist (q (nreverse questions))
+          (princ (format "  - %s\n" q)))))))
+#+end_src
+
+** Task Summary by Status
+
+#+begin_src elisp :results output
+(unless (fboundp 'backlog/design-get-all-docs)
+  (user-error "Run the loader block in Elisp Setup first"))
+(let ((todo-count 0) (wip-count 0) (hold-count 0) (done-count 0))
+  (dolist (file (backlog/design-get-all-docs))
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* TODO " nil t) (cl-incf todo-count))
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* WIP " nil t) (cl-incf wip-count))
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* HOLD " nil t) (cl-incf hold-count))
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* DONE " nil t) (cl-incf done-count))))
+  (princ (format "Task Summary:\n"))
+  (princ (format "  TODO: %3d\n" todo-count))
+  (princ (format "  WIP:  %3d\n" wip-count))
+  (princ (format "  HOLD: %3d\n" hold-count))
+  (princ (format "  DONE: %3d\n" done-count))
+  (princ (format "  ─────────\n"))
+  (princ (format "  Total: %d\n" (+ todo-count wip-count hold-count done-count))))
+#+end_src
+
+** Priority Items (:p0: and :p1:)
+
+#+begin_src elisp :results output
+(unless (fboundp 'backlog/design-get-all-docs)
+  (user-error "Run the loader block in Elisp Setup first"))
+(dolist (file (backlog/design-get-all-docs))
+  (with-temp-buffer
+    (insert-file-contents file)
+    (goto-char (point-min))
+    (let ((doc-name (file-name-nondirectory file))
+          (items nil))
+      (while (re-search-forward "^\\*\\* \\(TODO\\|WIP\\) \\(.+\\):p[01]:" nil t)
+        (push (format "[%s] %s" (match-string 1) (match-string 2)) items))
+      (when items
+        (princ (format "\n%s:\n" doc-name))
+        (dolist (item (nreverse items))
+          (princ (format "  %s\n" item)))))))
+#+end_src
+
+* Batch Commands
+
+Run queries from command line:
+
+#+begin_example
+# Simple queries with grep:
+grep -h "^\*\* OPEN" docs/design/*.org           # Open questions
+grep -h "^\*\* TODO" docs/design/*.org | head -20 # TODO tasks
+grep -l "^#+STATUS: Draft" docs/design/*.org      # Draft docs
+grep -h ":p0:\|:p1:" docs/design/*.org            # Priority items
+
+# Count tasks by status:
+grep -ch "^\*\* TODO" docs/design/*.org | paste -sd+ | bc  # Total TODOs
+#+end_example
 
 * Quick Reference
 
-| Task State | Meaning             |
-|------------+---------------------|
-| TODO       | Not started         |
-| WIP        | Work in progress    |
-| HOLD       | Blocked or deferred |
-| DONE       | Completed           |
+| Status   | Meaning                              |
+|----------+--------------------------------------|
+| Draft    | Under development, not ready         |
+| Review   | Ready for feedback                   |
+| Accepted | Approved, ready to implement         |
+| Active   | Implementation in progress           |
+| Complete | Fully implemented and verified       |
+| Archived | No longer active (rejected/obsolete) |
+
+| Task State | Key | Meaning             |
+|------------+-----+---------------------|
+| TODO       | t   | Not started         |
+| WIP        | w   | Work in progress    |
+| HOLD       | h   | Blocked or deferred |
+| DONE       | d   | Completed           |
+
+| Question | Key | Meaning                    |
+|----------+-----+----------------------------|
+| OPEN     | o   | Unresolved                 |
+| DECIDED  | d   | Resolved (check :DECIDED:) |
+
+* File Index
+
+- [[file:docs/design/README.org][Design Docs Index]] - Full listing of all design documents
+- [[file:org-setup.org][org-setup.org]] - Shared org-mode configuration
+- [[file:README.org][README.org]] - Project config (prefix, categories, statuses)
+- [[file:elisp/workflow-commands.el][elisp/workflow-commands.el]] - Emacs workflow commands

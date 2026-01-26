@@ -83,6 +83,8 @@ document frontmatter to classify documents. Valid categories are defined in
 - `/task-link <id> --github|--claude-task|--bead|--design` - Add link properties to existing task
 - `/new-design-doc <title> [source.md]` - Create new design doc (or convert markdown)
 - `/queue-design-doc <doc>` - Queue all tasks from a design doc with pre-flight checks
+- `/reconcile-design-docs [pattern]` - Cross-reference design doc tasks with git/changelog/code evidence
+- `/reconcile-backlog [--dry-run]` - Validate backlog links, remove stale entries, sync statuses
 
 ## Skills
 
