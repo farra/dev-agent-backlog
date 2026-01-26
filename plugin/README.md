@@ -4,13 +4,28 @@ Design doc driven task management for human-agent collaboration.
 
 ## Installation
 
+This plugin is designed for **project scope** installation. It assumes a specific
+project structure (`backlog.org`, `docs/design/`, etc.) that you'll create via setup.
+
 ```bash
 # Add the marketplace
 /plugin marketplace add farra/dev-agent-backlog
 
-# Install the plugin
-/plugin install backlog@dev-agent-backlog
+# Install the plugin (project scope recommended)
+/plugin install backlog@dev-agent-backlog --scope project
 ```
+
+### Installation Scopes
+
+| Scope | Recommended? | Notes |
+|-------|--------------|-------|
+| `--scope project` | Yes | Shared with collaborators via `.claude/settings.json` |
+| `--scope local` | OK | Just you, just this repo |
+| `--scope user` | No | Would trigger in every project, even without setup |
+
+**Why not user scope?** The skills (like `backlog-update`) trigger on common actions
+like commits. Without a `backlog.org` in the project, they'll fail or be confusing.
+Project scope ensures the plugin only activates where it's been set up.
 
 ## Quick Start
 
