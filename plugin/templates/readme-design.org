@@ -23,221 +23,90 @@ Each document captures a decision, its rationale, and implementation tasks.
 |-----+----------+--------|
 | 000 | [[file:000-template.org][Template]] | N/A    |
 
-* Maintenance Elisp
+* Elisp Setup
 :PROPERTIES:
 :header-args:elisp: :results silent
 :END:
 
-Helper functions for maintaining this index. Evaluate the source block with =C-c C-c=,
-then use the interactive commands.
+Load the workflow commands. Evaluate this block first with =C-c C-c=:
 
 #+begin_src elisp
-;;; Design Doc Maintenance -*- lexical-binding: t -*-
-
-(defvar design/dir (file-name-directory (buffer-file-name))
-  "Directory containing design documents.")
-
-(defvar design/valid-statuses
-  '("Draft" "Review" "Accepted" "Active" "Complete" "Archived")
-  "Valid status values for design documents.")
-
-(defun design/--extract-status (file)
-  "Extract #+STATUS: value from FILE."
-  (when (file-exists-p file)
-    (with-temp-buffer
-      (insert-file-contents file nil 0 1000)
-      (goto-char (point-min))
-      (when (re-search-forward "^#\\+STATUS:\\s-*\\(.+\\)$" nil t)
-        (string-trim (match-string 1))))))
-
-(defun design/--extract-category (file)
-  "Extract #+CATEGORY: value from FILE."
-  (when (file-exists-p file)
-    (with-temp-buffer
-      (insert-file-contents file nil 0 1000)
-      (goto-char (point-min))
-      (when (re-search-forward "^#\\+CATEGORY:\\s-*\\(.+\\)$" nil t)
-        (string-trim (match-string 1))))))
-
-(defun design/--extract-title (file)
-  "Extract #+TITLE: value from FILE."
-  (when (file-exists-p file)
-    (with-temp-buffer
-      (insert-file-contents file nil 0 1000)
-      (goto-char (point-min))
-      (when (re-search-forward "^#\\+TITLE:\\s-*\\(.+\\)$" nil t)
-        (string-trim (match-string 1))))))
-
-(defun design/--get-table-files ()
-  "Get list of (number . filename) from tables in current buffer."
-  (let (files)
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward
-              "^|\\s-*\\([0-9]+\\)\\s-*|.*\\[\\[file:\\([^]]+\\.org\\)\\]" nil t)
-        (push (cons (string-to-number (match-string 1))
-                    (match-string 2))
-              files)))
-    (nreverse files)))
-
-(defun design/--get-all-docs ()
-  "Get list of all numbered .org design docs."
-  (seq-filter
-   (lambda (f)
-     (string-match-p "^[0-9]+-" (file-name-nondirectory f)))
-   (directory-files design/dir t "\\.org$")))
-
-(defun design/sync-status ()
-  "Update status column in tables from actual #+STATUS: in linked files."
-  (interactive)
-  (let ((updates 0)
-        (errors nil))
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward
-              "^|\\s-*\\([0-9]+\\)\\s-*|\\s-*\\[\\[file:\\([^]]+\\.org\\)\\]\\[[^]]+\\]\\]\\s-*|\\s-*\\([^|]+\\)|" nil t)
-        (let* ((num (match-string 1))
-               (file (expand-file-name (match-string 2) design/dir))
-               (current-status (string-trim (match-string 3)))
-               (actual-status (design/--extract-status file)))
-          (cond
-           ((null actual-status)
-            (push (format "%s: no #+STATUS: found" num) errors))
-           ((not (string= current-status actual-status))
-            (let ((status-start (match-beginning 3))
-                  (status-end (match-end 3)))
-              (delete-region status-start status-end)
-              (goto-char status-start)
-              (insert (format "%-10s" actual-status))
-              (cl-incf updates)))))))
-    (if errors
-        (message "Updated %d statuses. Errors: %s" updates (string-join errors ", "))
-      (message "Updated %d statuses." updates))))
-
-(defun design/verify-links ()
-  "Check that all linked files in tables exist."
-  (interactive)
-  (let ((missing nil))
-    (dolist (entry (design/--get-table-files))
-      (let ((file (expand-file-name (cdr entry) design/dir)))
-        (unless (file-exists-p file)
-          (push (format "%03d: %s" (car entry) (cdr entry)) missing))))
-    (if missing
-        (message "Missing files:\n%s" (string-join (nreverse missing) "\n"))
-      (message "All linked files exist."))))
-
-(defun design/find-unlisted ()
-  "Find .org files in design dir not listed in this index."
-  (interactive)
-  (let* ((listed (mapcar #'cdr (design/--get-table-files)))
-         (all-docs (design/--get-all-docs))
-         (unlisted (seq-filter
-                    (lambda (f)
-                      (not (member (file-name-nondirectory f)
-                                   (mapcar #'file-name-nondirectory
-                                           (mapcar (lambda (l) (expand-file-name l design/dir)) listed)))))
-                    all-docs)))
-    (if unlisted
-        (message "Unlisted docs:\n%s"
-                 (string-join (mapcar #'file-name-nondirectory unlisted) "\n"))
-      (message "All docs are listed in the index."))))
-
-(defun design/stale-check ()
-  "Find docs where README status doesn't match actual status."
-  (interactive)
-  (let ((stale nil))
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward
-              "^|\\s-*\\([0-9]+\\)\\s-*|\\s-*\\[\\[file:\\([^]]+\\.org\\)\\]\\[[^]]+\\]\\]\\s-*|\\s-*\\([^|]+\\)|" nil t)
-        (let* ((num (match-string 1))
-               (file (expand-file-name (match-string 2) design/dir))
-               (readme-status (string-trim (match-string 3)))
-               (actual-status (design/--extract-status file)))
-          (when (and actual-status (not (string= readme-status actual-status)))
-            (push (format "%s: README='%s' actual='%s'"
-                          num readme-status actual-status)
-                  stale)))))
-    (if stale
-        (message "Stale entries:\n%s" (string-join (nreverse stale) "\n"))
-      (message "All statuses are in sync."))))
-
-(defun design/goto-doc (number)
-  "Jump to design doc by NUMBER."
-  (interactive "nDoc number: ")
-  (let ((file (car (seq-filter
-                    (lambda (f)
-                      (string-match-p (format "^%03d-" number)
-                                      (file-name-nondirectory f)))
-                    (design/--get-all-docs)))))
-    (if (and file (file-exists-p file))
-        (find-file file)
-      (user-error "No doc with number %d" number))))
-
-(defun design/next-number ()
-  "Return the next available doc number."
-  (interactive)
-  (let ((next (1+ (apply #'max 0
-                         (mapcar (lambda (f)
-                                   (if (string-match "^\\([0-9]+\\)-" (file-name-nondirectory f))
-                                       (string-to-number (match-string 1 (file-name-nondirectory f)))
-                                     0))
-                                 (design/--get-all-docs))))))
-    (message "Next available doc number: %03d" next)
-    next))
-
-(defun design/status-report ()
-  "Show a summary of document statuses."
-  (interactive)
-  (let ((status-counts (make-hash-table :test 'equal)))
-    (dolist (file (design/--get-all-docs))
-      (let ((status (or (design/--extract-status file) "Unknown")))
-        (puthash status (1+ (gethash status status-counts 0)) status-counts)))
-    (message "Status report:\n%s"
-             (string-join
-              (sort (map-apply (lambda (k v) (format "  %-10s %3d" k v))
-                               status-counts)
-                    #'string<)
-              "\n"))))
-
-(defun design/category-report ()
-  "Show a summary of document categories."
-  (interactive)
-  (let ((cat-counts (make-hash-table :test 'equal)))
-    (dolist (file (design/--get-all-docs))
-      (let ((cat (or (design/--extract-category file) "uncategorized")))
-        (puthash cat (1+ (gethash cat cat-counts 0)) cat-counts)))
-    (message "Category report:\n%s"
-             (string-join
-              (sort (map-apply (lambda (k v) (format "  %-12s %3d" k v))
-                               cat-counts)
-                    #'string<)
-              "\n"))))
-
-(message "Design doc helpers loaded. Commands:
-  M-x design/sync-status     - Update statuses from files
-  M-x design/stale-check     - Find mismatched statuses
-  M-x design/verify-links    - Check all links exist
-  M-x design/find-unlisted   - Find docs not in index
-  M-x design/goto-doc        - Jump to doc by number
-  M-x design/next-number     - Next available doc number
-  M-x design/status-report   - Status summary
-  M-x design/category-report - Category summary")
+;; Load workflow-commands.el from project elisp directory
+(let ((elisp-dir (expand-file-name "../../elisp"
+                                   (file-name-directory (buffer-file-name)))))
+  (if (file-exists-p (expand-file-name "workflow-commands.el" elisp-dir))
+      (progn
+        (add-to-list 'load-path elisp-dir)
+        (require 'workflow-commands)
+        (message "Loaded backlog/ commands from %s" elisp-dir))
+    (user-error "workflow-commands.el not found in %s" elisp-dir)))
 #+end_src
 
-** Usage
+** Available Commands
 
-1. Open this file in Emacs
-2. Navigate to the elisp block above and press =C-c C-c= to evaluate
-3. Use the interactive commands:
+After loading, these commands are available:
 
-| Command                     | Description                             |
-|-----------------------------+-----------------------------------------|
-| =M-x design/sync-status=    | Update table statuses from actual files |
-| =M-x design/stale-check=    | Find where README ≠ actual status       |
-| =M-x design/verify-links=   | Ensure all linked files exist           |
-| =M-x design/find-unlisted=  | Find .org files not in this index       |
-| =M-x design/goto-doc=       | Jump to a doc by its number             |
-| =M-x design/next-number=    | Get next available document number      |
-| =M-x design/status-report=  | Show count of docs by status            |
-| =M-x design/category-report= | Show count of docs by category         |
+| Command                          | Description                             |
+|----------------------------------+-----------------------------------------|
+| =M-x backlog/design-sync-status=   | Update table statuses from actual files |
+| =M-x backlog/design-stale-check=   | Find where README ≠ actual status       |
+| =M-x backlog/design-verify-links=  | Ensure all linked files exist           |
+| =M-x backlog/design-find-unlisted= | Find .org files not in this index       |
+| =M-x backlog/design-goto-doc=      | Jump to a doc by its number             |
+| =M-x backlog/design-next-number=   | Get next available document number      |
+| =M-x backlog/design-status-report= | Show count of docs by status            |
+| =M-x backlog/design-category-report= | Show count of docs by category        |
+| =M-x backlog/task-queue=           | Queue task at point into backlog.org    |
+
+** Quick Actions
+
+Evaluate any of these with =C-c C-c= (requires loading above first):
+
+*** Sync statuses from files
+#+begin_src elisp
+(unless (fboundp 'backlog/design-sync-status)
+  (user-error "Run the loader block above first"))
+(backlog/design-sync-status)
+#+end_src
+
+*** Check for stale entries
+#+begin_src elisp
+(unless (fboundp 'backlog/design-stale-check)
+  (user-error "Run the loader block above first"))
+(backlog/design-stale-check)
+#+end_src
+
+*** Find unlisted docs
+#+begin_src elisp
+(unless (fboundp 'backlog/design-find-unlisted)
+  (user-error "Run the loader block above first"))
+(backlog/design-find-unlisted)
+#+end_src
+
+*** Verify all links
+#+begin_src elisp
+(unless (fboundp 'backlog/design-verify-links)
+  (user-error "Run the loader block above first"))
+(backlog/design-verify-links)
+#+end_src
+
+*** Status report
+#+begin_src elisp
+(unless (fboundp 'backlog/design-status-report)
+  (user-error "Run the loader block above first"))
+(backlog/design-status-report)
+#+end_src
+
+*** Category report
+#+begin_src elisp
+(unless (fboundp 'backlog/design-category-report)
+  (user-error "Run the loader block above first"))
+(backlog/design-category-report)
+#+end_src
+
+*** Next available doc number
+#+begin_src elisp
+(unless (fboundp 'backlog/design-next-number)
+  (user-error "Run the loader block above first"))
+(backlog/design-next-number)
+#+end_src
