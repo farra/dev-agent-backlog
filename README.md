@@ -189,7 +189,7 @@ With Claude Code:
 
 With Emacs:
 - Position on a task heading
-- `M-x dab-task-queue` to check out
+- `M-x backlog/task-queue` to check out
 - Edit backlog.org for progress notes
 - Manually reconcile when done
 
@@ -198,11 +198,12 @@ With Emacs:
 Add to your config:
 
 ```elisp
-;; Load the task queue command
-(load "path/to/your-project/elisp/workflow-commands.el")
+;; Load the workflow commands
+(add-to-list 'load-path "path/to/your-project/elisp")
+(require 'workflow-commands)
 
 ;; Optional: bind to a key
-(define-key org-mode-map (kbd "C-c q") #'dab-task-queue)
+(define-key org-mode-map (kbd "C-c q") #'backlog/task-queue)
 ```
 
 See `backlog.org` Setup section for agenda configuration.
