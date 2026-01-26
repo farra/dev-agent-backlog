@@ -25,11 +25,17 @@ Read `* Current WIP` > `** Active` section in backlog.org.
 
 Look for tasks with state `WIP` (work in progress).
 
-### 2. Surface Handoff Notes
+### 2. Surface Handoff Notes and Claude Task State
 
 For each WIP task found:
 - Read the `:HANDOFF:` property
 - Read recent progress notes (entries starting with `[YYYY-MM-DD]`)
+- Check for `:CLAUDE_TASK:` property
+
+**If `:CLAUDE_TASK:` exists:**
+- Note the Task List ID for cross-session coordination
+- Check if there are related Tasks or dependencies
+- This task has agent coordination enabled
 
 ### 3. Present Resume Option
 
@@ -48,8 +54,13 @@ Found active work from previous session:
 **Recent progress:**
 > <last progress note>
 
+**Claude Task:** <task-list-id>/<task-id> (if present)
+
 Continue working on this task?
 ```
+
+The Claude Task link (if present) enables cross-session coordination.
+Follow the link to check for any updates from subagents or other sessions.
 
 ### 4. If No WIP Tasks
 

@@ -87,6 +87,7 @@ document frontmatter to classify documents. Valid categories are defined in
 
 - `backlog-resume` - Triggers on session start; checks for WIP tasks and surfaces handoff notes
 - `backlog-update` - Triggers before commits; reminds to update backlog.org, changelog, and handoff notes
+- `claude-tasks-sync` - Triggers when using Claude Tasks; ensures cross-references exist in backlog.org
 - `new-design-doc` - Triggers during architectural discussions; suggests creating design docs
 
 ## Task Properties

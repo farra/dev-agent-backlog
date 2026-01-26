@@ -38,6 +38,23 @@ From the task entry in backlog.org:
 - Change task state from TODO to WIP
 - Add `claude-code` to `:WORKED_BY:` if not already present
 
+### 2b. Create Claude Task (Execution Time Sync)
+
+Create a Claude Task for this work and link it from backlog.org:
+
+1. Create Claude Task with:
+   - ID matching the task ID (e.g., `DAB-001-01`)
+   - Title from the task heading
+   - Status: in_progress
+
+2. Add `:CLAUDE_TASK:` property to backlog entry:
+   ```org
+   :CLAUDE_TASK: <task-list-id>/<task-id>
+   ```
+
+This is the "execution time" trigger for backlog → Claude Task sync.
+The Claude Task enables cross-session coordination if work spans multiple sessions.
+
 ### 3. Gather Related Context
 
 Read the full design doc containing the task:
