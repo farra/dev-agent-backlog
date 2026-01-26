@@ -1,4 +1,4 @@
-#+TITLE: Project Backlog
+#+TITLE: PROJECT Backlog
 #+SETUPFILE: ./org-setup.org
 
 * Current WIP
@@ -6,7 +6,7 @@
 Active tasks checked out from design docs.
 
 ** Active
-# Queue tasks here with /task-queue or M-x dab-task-queue
+# Queue tasks here with /task-queue or M-x backlog/task-queue
 
 ** Blocked
 # Tasks waiting on external dependency
@@ -60,14 +60,218 @@ This is the *working surface* for development.
 - =:WORKED_BY:= - Who has worked on this (claude-code, human)
 
 * Setup
+:PROPERTIES:
+:header-args:elisp: :results silent
+:END:
 
-See org-setup.org for shared configuration.
+** Emacs Agenda Configuration
+
+Add design docs to org-agenda. Evaluate with =C-c C-c=:
+
+#+begin_src emacs-lisp :results silent
+(setq backlog/design-docs
+      (file-expand-wildcards
+       (expand-file-name "docs/design/*.org"
+                         (file-name-directory (buffer-file-name)))))
+(setq org-agenda-files backlog/design-docs)
+(message "Added %d design docs to agenda" (length backlog/design-docs))
+#+end_src
+
+** Custom Agenda Views
+
+#+begin_src emacs-lisp :results silent
+(setq org-agenda-custom-commands
+      '(("d" . "Design Docs")
+        ("do" "Open Questions" tags-todo "questions"
+         ((org-agenda-files backlog/design-docs)
+          (org-agenda-sorting-strategy '(priority-down))))
+        ("dt" "All Tasks" tags-todo "tasks"
+         ((org-agenda-files backlog/design-docs)))
+        ("dw" "WIP Tasks" tags-todo "tasks/WIP"
+         ((org-agenda-files backlog/design-docs)))
+        ("dp" "Priority Tasks" tags-todo "tasks+p0|tasks+p1"
+         ((org-agenda-files backlog/design-docs)))))
+(message "Custom agenda views configured: C-c a d")
+#+end_src
+
+** Task Queue Command
+
+Queue a task from a design doc into backlog.org:
+
+#+begin_src emacs-lisp :results silent
+(defun backlog/task-queue ()
+  "Queue the task at point into backlog.org Active section.
+Run this while point is on a TODO headline in a design doc."
+  (interactive)
+  (unless (org-at-heading-p)
+    (user-error "Not on a heading"))
+  (let* ((source-file (buffer-file-name))
+         (heading (org-get-heading t t t t))
+         (task-id (when (string-match "\\[\\([A-Z]+-[0-9]+-[0-9]+\\)\\]" heading)
+                    (match-string 1 heading)))
+         (effort (org-entry-get nil "EFFORT"))
+         (backlog-dir (locate-dominating-file source-file "backlog.org"))
+         (source-link (format "[[file:%s::*%s][%s in %s]]"
+                              (file-relative-name source-file backlog-dir)
+                              (url-hexify-string heading)
+                              (or task-id "source")
+                              (file-name-nondirectory source-file)))
+         (backlog-file (expand-file-name "backlog.org" backlog-dir)))
+    (unless task-id
+      (user-error "No task ID found in heading (expected [PREFIX-NNN-XX])"))
+    (find-file backlog-file)
+    (goto-char (point-min))
+    (unless (re-search-forward "^\\*\\* Active" nil t)
+      (user-error "Could not find '** Active' section in backlog.org"))
+    (org-end-of-subtree)
+    (insert (format "\n\n*** TODO %s
+:PROPERTIES:
+:DESIGN: %s%s
+:HANDOFF:
+:WORKED_BY:
+:END:
+
+" heading source-link (if effort (format "\n:EFFORT: %s" effort) "")))
+    (message "Queued %s into backlog.org" task-id)))
+
+(message "Task queue command loaded: M-x backlog/task-queue")
+#+end_src
+
+* Queries
+:PROPERTIES:
+:header-args:elisp: :results output
+:END:
+
+Execute any query with =C-c C-c= on the source block.
+
+** Open Questions
+
+#+begin_src emacs-lisp :results output
+(let ((files (file-expand-wildcards
+              (expand-file-name "docs/design/[0-9]*.org"
+                                (file-name-directory (buffer-file-name))))))
+  (dolist (file files)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (let ((doc-name (file-name-nondirectory file))
+            (questions nil))
+        (while (re-search-forward "^\\*\\* OPEN \\(.+\\)" nil t)
+          (push (match-string 1) questions))
+        (when questions
+          (princ (format "\n%s:\n" doc-name))
+          (dolist (q (nreverse questions))
+            (princ (format "  - %s\n" q))))))))
+#+end_src
+
+** Task Summary by Status
+
+#+begin_src emacs-lisp :results output
+(let ((files (file-expand-wildcards
+              (expand-file-name "docs/design/[0-9]*.org"
+                                (file-name-directory (buffer-file-name)))))
+      (todo-count 0) (wip-count 0) (hold-count 0) (done-count 0))
+  (dolist (file files)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* TODO " nil t) (cl-incf todo-count))
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* WIP " nil t) (cl-incf wip-count))
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* HOLD " nil t) (cl-incf hold-count))
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\* DONE " nil t) (cl-incf done-count))))
+  (princ (format "Task Summary:\n"))
+  (princ (format "  TODO: %3d\n" todo-count))
+  (princ (format "  WIP:  %3d\n" wip-count))
+  (princ (format "  HOLD: %3d\n" hold-count))
+  (princ (format "  DONE: %3d\n" done-count))
+  (princ (format "  ─────────\n"))
+  (princ (format "  Total: %d\n" (+ todo-count wip-count hold-count done-count))))
+#+end_src
+
+** Documents by Status
+
+#+begin_src emacs-lisp :results output
+(let ((files (file-expand-wildcards
+              (expand-file-name "docs/design/[0-9]*.org"
+                                (file-name-directory (buffer-file-name)))))
+      (by-status (make-hash-table :test 'equal)))
+  (dolist (file files)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (when (re-search-forward "^#\\+STATUS: \\(.+\\)" nil t)
+        (let ((status (match-string 1))
+              (name (file-name-nondirectory file)))
+          (puthash status (cons name (gethash status by-status)) by-status)))))
+  (maphash (lambda (status docs)
+             (princ (format "\n%s (%d):\n" status (length docs)))
+             (dolist (doc (sort docs #'string<))
+               (princ (format "  %s\n" doc))))
+           by-status))
+#+end_src
+
+** Priority Items (:p0: and :p1:)
+
+#+begin_src emacs-lisp :results output
+(let ((files (file-expand-wildcards
+              (expand-file-name "docs/design/[0-9]*.org"
+                                (file-name-directory (buffer-file-name))))))
+  (dolist (file files)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (let ((doc-name (file-name-nondirectory file))
+            (items nil))
+        (while (re-search-forward "^\\*\\* \\(TODO\\|WIP\\) \\(.+\\):p[01]:" nil t)
+          (push (format "[%s] %s" (match-string 1) (match-string 2)) items))
+        (when items
+          (princ (format "\n%s:\n" doc-name))
+          (dolist (item (nreverse items))
+            (princ (format "  %s\n" item))))))))
+#+end_src
+
+* Batch Commands
+
+Run queries from command line:
+
+#+begin_example
+# Simple queries with grep:
+grep -h "^\*\* OPEN" docs/design/*.org           # Open questions
+grep -h "^\*\* TODO" docs/design/*.org | head -20 # TODO tasks
+grep -l "^#+STATUS: Draft" docs/design/*.org      # Draft docs
+grep -h ":p0:\|:p1:" docs/design/*.org            # Priority items
+
+# Count tasks by status:
+grep -ch "^\*\* TODO" docs/design/*.org | paste -sd+ | bc  # Total TODOs
+#+end_example
 
 * Quick Reference
 
-| Task State | Meaning             |
-|------------+---------------------|
-| TODO       | Not started         |
-| WIP        | Work in progress    |
-| HOLD       | Blocked or deferred |
-| DONE       | Completed           |
+| Status   | Meaning                              |
+|----------+--------------------------------------|
+| Draft    | Under development, not ready         |
+| Review   | Ready for feedback                   |
+| Accepted | Approved, ready to implement         |
+| Active   | Implementation in progress           |
+| Complete | Fully implemented and verified       |
+| Archived | No longer active (rejected/obsolete) |
+
+| Task State | Key | Meaning             |
+|------------+-----+---------------------|
+| TODO       | t   | Not started         |
+| WIP        | w   | Work in progress    |
+| HOLD       | h   | Blocked or deferred |
+| DONE       | d   | Completed           |
+
+| Question | Key | Meaning                    |
+|----------+-----+----------------------------|
+| OPEN     | o   | Unresolved                 |
+| DECIDED  | d   | Resolved (check :DECIDED:) |
+
+* File Index
+
+- [[file:docs/design/README.org][Design Docs Index]] - Full listing of all design documents
+- [[file:org-setup.org][org-setup.org]] - Shared org-mode configuration
