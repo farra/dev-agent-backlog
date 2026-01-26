@@ -8,10 +8,10 @@
 
 * Summary
 
-Explore integration between dev-agent-backlog's org-mode task system and Claude
-Code's new Tasks primitive. Tasks (evolved from Todos) are stored in
-=~/.claude/tasks=, support dependencies, and enable cross-session/subagent
-coordination via =CLAUDE_CODE_TASK_LIST_ID=.
+Position backlog.org as a universal "hub" that links to tasks wherever they
+live: design docs, Claude Tasks, GitHub issues, Beads, or other systems. The
+backlog becomes the human-readable rosetta stone that both agents and humans can
+read, while agent-native primitives (Claude Tasks, Beads) handle coordination.
 
 * Context
 
@@ -24,21 +24,12 @@ We're upgrading Todos to Tasks. Tasks are a new primitive that help Claude Code
 track and complete more complicated projects and collaborate on them across
 multiple sessions or subagents.
 
-Compared to previous models, Opus 4.5 is able to run autonomously for longer and
-keep track of its state better. We found that the TodoWrite Tool was no longer
-necessary because Claude already knew what it needed to do for smaller tasks.
-
-At the same time, we found ourselves using Claude Code to complete longer
-projects, sometimes across multiple subagents, context windows or sessions. But
-projects are more complex, tasks have dependencies and blockers and require
-coordination when using it across sessions.
-
 Tasks are our new abstraction for coordinating many pieces of work across
 projects. Claude can create Tasks with dependencies on each other that are
-stored in the metadata, which mirrors more how projects work. Additionally,
-Tasks are stored in the file system so that multiple subagents or sessions can
-collaborate on them. When one session updates a Task, that is broadcasted to all
-sessions currently working on the same Task List.
+stored in the metadata. Additionally, Tasks are stored in the file system so
+that multiple subagents or sessions can collaborate on them. When one session
+updates a Task, that is broadcasted to all sessions currently working on the
+same Task List.
 #+end_quote
 
 Key capabilities:
@@ -48,283 +39,300 @@ Key capabilities:
 - Works with subagents and AgentSDK
 - Broadcasted updates when multiple sessions share a Task List
 
-** Current dev-agent-backlog System
+** Beads (Steve Yegge)
 
-Our system uses org-mode files with a checkout/reconcile pattern:
+Beads was cited as inspiration for Claude Tasks. It's another agent coordination
+system with its own primitives. If we design backlog.org as a hub, it can link
+to Beads references just as easily as Claude Tasks.
 
-#+begin_example
-Design Doc (canonical)              Backlog.org (working surface)
-├── ** TODO [ID] Task       →       *** TODO [ID] Task
-│   :EFFORT: M                          :SOURCE: [[file:...]]
-│                                       :HANDOFF: notes
-│                                       :WORKED_BY: claude-code
-│
-│                           ←       (reconciled after completion)
-└── ** DONE [ID] Task
-    :COMPLETED_BY: claude-code
-    :VERSION: 1.2.0
-#+end_example
+** The Problem with "Shadow" Approaches
 
-Strengths:
-- Rich documentation context (design docs)
-- Human-readable org format
-- Git-versioned history
-- `:HANDOFF:` for session continuity
-- `:SOURCE:` links maintain provenance
+Earlier thinking proposed creating Claude Tasks as "shadows" of org tasks—keeping
+them in sync bidirectionally. This adds complexity:
+- Sync logic for status changes
+- Conflict resolution
+- Duplicate state to maintain
 
-Gaps (identified in [[file:009-beads-features.org][009 - Beads Features]]):
-- No explicit dependency tracking
-- No "ready work" query
-- Manual filtering for what's actionable
-
-** Complementary Capabilities
-
-| Capability                  | Org-Mode           | Claude Tasks       |
-|-----------------------------+--------------------+--------------------|
-| Rich documentation          | Excellent          | Minimal            |
-| Human readability           | Excellent          | JSON files         |
-| Git versioning              | Native             | Possible           |
-| Dependency tracking         | Via org-depend.el  | Native             |
-| Cross-session coordination  | Manual (:HANDOFF:) | Native (broadcast) |
-| Subagent coordination       | Not designed for   | Native             |
-| Ready work filtering        | Manual grep        | Native (unblocked) |
+A better model: backlog.org doesn't duplicate—it *links*.
 
 * Goals and Non-Goals
 
 ** Goals
 
-1. Leverage Claude Tasks for what they do well: dependencies, cross-session
-   coordination, subagent work
-2. Keep org-mode for what it does well: documentation, context, human review
-3. Seamless experience: Claude naturally uses both systems together
-4. No duplicate data entry: one action updates both as needed
+1. *backlog.org as hub*: Human-readable index linking to tasks in any system
+2. *No duplication*: Links and handoff notes only, not copied content
+3. *System agnostic*: Same pattern works for Claude Tasks, Beads, GitHub, etc.
+4. *Both audiences*: Humans read backlog directly; agents follow links to native primitives
 
 Success criteria:
-- When starting a task, Claude creates both backlog entry and Claude Task
-- When spanning sessions, Claude Task provides coordination
-- Design docs remain the canonical source of task definitions
-- Minimal changes to existing commands/skills
+- A single backlog entry can reference design doc, Claude Task, AND GitHub issue
+- Agents can parse links to find their native coordination primitives
+- Humans see a unified view without understanding ~/.claude/tasks JSON
+- Adding new systems (Beads, Linear, etc.) requires only new property conventions
 
 ** Non-Goals
 
-- Replacing backlog.org entirely with Claude Tasks
-- Forcing users to manage Claude Tasks directly
-- Complex bidirectional sync logic
-- Supporting Claude Tasks without the plugin (standalone Tasks work fine already)
+- Bidirectional sync between systems
+- Replacing any system with another
+- Forcing all tasks through all systems
 
 * Proposal
 
-** Option A: Skills as Integration Layer (Recommended)
-
-Update existing skills and commands to treat org tasks as having a Claude Task
-"shadow" when needed.
-
-*** Changes to /task-start
-
-When starting work on a backlog task:
-
-1. Create a Claude Task with matching ID: =[DAB-005-01]=
-2. Set Task description from org heading
-3. Parse any =:BLOCKED_BY:= properties and set as dependencies
-4. Use the session's =CLAUDE_CODE_TASK_LIST_ID= if set
-
-#+begin_src markdown
-# In task-start.md additions
-
-## Claude Task Integration
-
-If Claude Tasks are available (check for ~/.claude/tasks directory):
-
-1. Create a Claude Task with ID matching the backlog task
-2. Include link to backlog entry in Task notes
-3. If task has :BLOCKED_BY: property, set Task dependencies
-
-This enables cross-session coordination without duplicating context.
-#+end_src
-
-*** Changes to backlog-resume
-
-When checking for WIP tasks:
-
-1. Also check if there's an active Claude Task List
-2. Cross-reference with backlog.org
-3. Surface both: "Found WIP in backlog AND active Claude Tasks"
-
-*** Changes to task-complete
-
-When completing a task:
-
-1. Mark Claude Task complete if it exists
-2. Proceed with normal org reconciliation
-
-*** New: task-list Command
-
-Create a way to link a session to a Claude Task List:
+** The Hub Model
 
 #+begin_example
-/backlog:task-list create <design-doc>
-# Creates Task List with all TODO items from the design doc
-
-/backlog:task-list join <list-id>
-# Join existing Task List (for multi-session work)
-
-/backlog:task-list status
-# Show current Task List and sync status
+                        backlog.org (hub/glue)
+                              │
+         ┌────────────┬───────┴───────┬────────────┐
+         ▼            ▼               ▼            ▼
+    Design Doc    Claude Task    GitHub Issue    Bead
+    :SOURCE:      :CLAUDE_TASK:  :GITHUB:        :BEAD:
 #+end_example
 
-** Option B: Claude Tasks as Working Surface
+backlog.org is the *join table*—a human-readable index that links to wherever
+tasks are authoritatively defined or coordinated.
 
-Replace backlog.org with Claude Tasks entirely:
+** Backlog Entry with Multiple Links
 
-#+begin_example
-Design Doc → Claude Tasks → Design Doc
-(canonical)   (working)     (reconciled)
-#+end_example
+#+begin_src org
+*** WIP [DAB-012-02] Update task-start to create Claude Task
+:PROPERTIES:
+:SOURCE: [[file:docs/design/012-claude-tasks.org::*Tasks][DAB-012-02 in design doc]]
+:CLAUDE_TASK: [[file:~/.claude/tasks/dab-012/task-002.json][task-002]]
+:GITHUB: [[https://github.com/farra/dev-agent-backlog/issues/15][#15]]
+:BEAD: [[bead:session-xyz/task-002][bead ref]]
+:EFFORT: M
+:HANDOFF: Started implementation, need to test cross-session sync
+:WORKED_BY: claude-code
+:END:
 
-Changes:
-- =/task-queue= creates Claude Task instead of backlog entry
-- =/task-complete= reads from Claude Tasks, reconciles to design doc
-- Remove backlog.org
-
-Pros:
-- Native dependency support
-- Cross-session coordination built-in
-- Simpler system (fewer files)
-
-Cons:
-- Lose rich org formatting for progress notes
-- `:HANDOFF:` pattern doesn't map directly
-- Claude Tasks are JSON, not human-friendly
-- Lose =:SOURCE:= links for provenance
-- Breaking change for existing users
-
-** Option C: Instructional Only (Minimal Change)
-
-Update CLAUDE.md and skills to instruct Claude about Tasks without code changes:
-
-#+begin_src markdown
-# In CLAUDE.md additions
-
-## Claude Tasks Integration
-
-When working on complex tasks spanning multiple sessions or using subagents,
-consider creating Claude Tasks that reference backlog task IDs:
-
-- For multi-session work: Create Task List with `CLAUDE_CODE_TASK_LIST_ID`
-- For subagent work: Create dependent Tasks for subtasks
-- Always keep backlog.org as the human-readable record
-
-Claude Tasks complement the backlog; they don't replace it.
+Progress notes stay here in org format...
 #+end_src
 
-Pros:
-- Zero code changes
-- Leverages Claude's judgment
-- Non-breaking
+** What Each System Provides
 
-Cons:
-- Inconsistent usage
-- No explicit integration
-- Claude may forget to create Tasks
+| System       | Property       | Purpose                              |
+|--------------+----------------+--------------------------------------|
+| Design Doc   | =:SOURCE:=     | Canonical definition, context, spec  |
+| Claude Tasks | =:CLAUDE_TASK:= | Cross-session/subagent coordination |
+| GitHub       | =:GITHUB:=     | External tracking, collaboration     |
+| Beads        | =:BEAD:=       | Alternative agent coordination       |
+| Linear/Jira  | =:LINEAR:=     | Team project management              |
 
-** Recommendation
+** How Each Audience Uses the Hub
 
-Start with **Option A** (Skills as Integration Layer):
+*** Humans
 
-1. Immediate: Add Option C instructions to CLAUDE.md
-2. Short-term: Update =task-start= to create Claude Tasks
-3. Medium-term: Add =task-list= command for explicit Task List management
+Read backlog.org directly:
+- See all active work in one place
+- Read progress notes and handoff context
+- Follow =:SOURCE:= to design docs for full context
+- Don't need to understand Claude Tasks JSON or Beads format
 
-This provides explicit integration where it matters (task start/complete) while
-keeping the flexibility of org-mode for documentation.
+*** Claude / Agents
+
+Read backlog.org, then follow links:
+1. Parse backlog.org to find WIP tasks
+2. Check for =:CLAUDE_TASK:= property
+3. If present, use Claude Task for coordination (dependencies, broadcast)
+4. If absent, create one if multi-session work is needed
+5. Always update =:HANDOFF:= in backlog for human visibility
+
+*** Subagents
+
+When spawning subagents:
+1. Create Claude Tasks for coordination
+2. Parent agent adds =:CLAUDE_TASK:= link to backlog entry
+3. Subagents update Claude Task status
+4. Broadcast keeps parent informed
+5. Results reconciled back through backlog
+
+** Workflow Examples
+
+*** Single-Session Work
+
+No Claude Task needed:
+
+#+begin_example
+/task-start DAB-012-01
+→ Check backlog for task
+→ No :CLAUDE_TASK: property, that's fine
+→ Work happens in single session
+→ Update :HANDOFF: before stopping
+/task-complete DAB-012-01
+→ Reconcile to design doc
+#+end_example
+
+*** Multi-Session Work
+
+Create Claude Task for coordination:
+
+#+begin_example
+/task-start DAB-012-02
+→ Check backlog for task
+→ Complex work, will span sessions
+→ Create Claude Task, add :CLAUDE_TASK: to backlog
+→ Work in session 1...
+→ Session ends, :HANDOFF: updated
+
+[New session]
+→ backlog-resume finds WIP task
+→ Follows :CLAUDE_TASK: link for coordination state
+→ Continues work
+/task-complete DAB-012-02
+→ Mark Claude Task complete
+→ Reconcile to design doc
+#+end_example
+
+*** Parallel Subagent Work
+
+#+begin_example
+/task-start DAB-012-05
+→ Large task, spawn 3 subagents
+→ Create Claude Task List with 3 dependent Tasks
+→ Add :CLAUDE_TASK: pointing to parent Task
+→ Subagents work in parallel, updating their Tasks
+→ Broadcast keeps main session informed
+→ All complete → mark parent Task done
+/task-complete DAB-012-05
+#+end_example
+
+** Link Property Conventions
+
+*** Required: SOURCE
+
+Every backlog task MUST have =:SOURCE:= linking to canonical definition:
+
+#+begin_src org
+:SOURCE: [[file:docs/design/NNN-doc.org::*Tasks][ID in doc.org]]
+#+end_src
+
+*** Optional: CLAUDE_TASK
+
+Add when multi-session or subagent coordination is needed:
+
+#+begin_src org
+:CLAUDE_TASK: [[file:~/.claude/tasks/<list-id>/<task-id>.json][task-id]]
+#+end_src
+
+Or for Task Lists:
+
+#+begin_src org
+:CLAUDE_TASK_LIST: <list-id>
+#+end_src
+
+*** Optional: GITHUB
+
+Link to GitHub issue if external tracking exists:
+
+#+begin_src org
+:GITHUB: [[https://github.com/owner/repo/issues/N][#N]]
+#+end_src
+
+*** Optional: BEAD
+
+Link to Bead reference (format TBD based on Beads conventions):
+
+#+begin_src org
+:BEAD: [[bead:<session>/<task>][bead ref]]
+#+end_src
+
+*** Future: Other Systems
+
+Same pattern extends to any system:
+
+#+begin_src org
+:LINEAR: [[https://linear.app/team/issue/XXX][XXX]]
+:JIRA: [[https://org.atlassian.net/browse/KEY-123][KEY-123]]
+:NOTION: [[https://notion.so/page-id][Page Title]]
+#+end_src
 
 * Questions                                                      :questions:
 
-** OPEN Should Claude Tasks mirror ALL backlog tasks or only WIP?
+** OPEN When should Claude auto-create a Claude Task?
 
 Options:
-1. *All tasks* - Full sync, higher fidelity
-2. *Only WIP* - Create Task on /task-start, remove on complete
-3. *User choice* - /task-list create vs implicit creation
+1. *Never auto* - Only when explicitly requested or via /task-list command
+2. *Heuristic* - Create when task has dependencies or spans sessions
+3. *Always for WIP* - Any task moved to WIP gets a Claude Task
 
-Leaning toward (2): Claude Tasks are for coordination, not archival. WIP tasks
-need coordination; completed/pending don't.
+Leaning toward (2): Let Claude judge when coordination primitives are needed.
 
-** OPEN How to handle Task List IDs?
+** OPEN What's the Beads link format?
 
-Options:
-1. *Per design doc* - Task List ID = design doc number
-2. *Per project* - Single Task List for whole project
-3. *Ad-hoc* - Create as needed, store ID in backlog.org header
+Need to investigate Beads conventions to define =:BEAD:= property format.
 
-Leaning toward (1): Aligns with our doc-centric model. Each design doc could
-have its own Task List for related work.
+** OPEN Should we support reverse links?
 
-** OPEN What about subagent task spawning?
-
-When Claude spawns subagents for parallel work, it may create Tasks for them.
-Should those flow back into backlog.org?
+Should Claude Tasks or GitHub issues link back to backlog.org?
 
 Options:
-1. *Ignore* - Subagent Tasks are ephemeral coordination
-2. *Capture* - =backlog-update= skill notices new Tasks and prompts to add
-3. *Auto-sync* - Hook that mirrors Tasks to backlog
+1. *No* - Hub is one-way, keeps systems decoupled
+2. *Yes, in notes* - Add backlog path in Task/issue description
+3. *Convention* - Standard comment like "Tracked in: backlog.org#DAB-012-02"
 
-Leaning toward (2): Let the skill prompt rather than auto-sync.
+Leaning toward (2): Non-intrusive, helps navigation.
 
 * Tasks                                                              :tasks:
 
-** TODO [DAB-012-01] Add Claude Tasks guidance to CLAUDE.md              :p1:
+** TODO [DAB-012-01] Document hub model in CLAUDE.md                     :p1:
 :PROPERTIES:
 :EFFORT: S
 :END:
 
-Document the relationship between org tasks and Claude Tasks. When to use each.
+Explain backlog.org as hub, link properties, when to create Claude Tasks.
 
-** TODO [DAB-012-02] Update task-start to create Claude Task            :p1:
+** TODO [DAB-012-02] Add :CLAUDE_TASK: property support to task-start    :p1:
 :PROPERTIES:
 :EFFORT: M
 :END:
 
-When starting work on a backlog task, also create a corresponding Claude Task
-for cross-session coordination.
+When starting a task, optionally create Claude Task and add property link.
+Heuristic: create if task has dependencies or user requests multi-session work.
 
-** TODO [DAB-012-03] Update backlog-resume to check Claude Tasks        :p1:
+** TODO [DAB-012-03] Update backlog-resume to follow :CLAUDE_TASK: links :p1:
 :PROPERTIES:
 :EFFORT: S
 :END:
 
-Check for active Claude Task Lists in addition to backlog.org WIP entries.
+When resuming, check for Claude Task links and surface coordination state.
 
-** TODO [DAB-012-04] Update task-complete to close Claude Task          :p1:
+** TODO [DAB-012-04] Add :GITHUB: property support                       :p2:
 :PROPERTIES:
 :EFFORT: S
 :END:
 
-When completing a backlog task, also mark the corresponding Claude Task done.
+Document convention, update task-queue to accept GitHub issue URL.
 
-** TODO [DAB-012-05] Create /task-list command                          :p2:
+** TODO [DAB-012-05] Research Beads integration                          :p2:
 :PROPERTIES:
 :EFFORT: M
 :END:
 
-New command for explicit Task List management: create, join, status.
+Investigate Beads format, define =:BEAD:= property convention.
 
-** TODO [DAB-012-06] Evaluate subagent Task capture                     :p2:
+** TODO [DAB-012-06] Create /task-link command                           :p2:
 :PROPERTIES:
 :EFFORT: M
 :END:
 
-Prototype detection of Tasks created by subagents and prompting to add to
-backlog. May require hook or polling.
+New command to add links to existing backlog tasks:
+
+#+begin_example
+/task-link DAB-012-02 --claude-task <id>
+/task-link DAB-012-02 --github https://github.com/.../issues/15
+/task-link DAB-012-02 --bead session-xyz/task-002
+#+end_example
 
 * References
 
 - [[https://x.com/trq212/status/2014480496013803643][Claude Tasks Announcement (Twitter)]]
-- [[file:009-beads-features.org][009 - Beads-Inspired Features]] - Prior analysis of dependency tracking gaps
+- [[file:009-beads-features.org][009 - Beads-Inspired Features]] - Prior analysis, Beads as inspiration
 - [[file:005-gastown-features.org][005 - Gastown-Inspired Features]] - Session continuity patterns
+- [[file:003-backlog-workflow.org][003 - Backlog Workflow]] - Current backlog.org design
 - [[file:011-plugin-architecture.org][011 - Plugin Architecture]] - Current plugin structure
 
 * Changelog
 
-- *2026-01-26:* Initial draft exploring integration options
+- *2026-01-26:* Revised to hub model (backlog as universal glue)
+- *2026-01-26:* Initial draft exploring shadow/sync approaches
