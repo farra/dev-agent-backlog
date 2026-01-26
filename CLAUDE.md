@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-dev-agent-backlog is a task management system for human-agent collaboration. It uses org-mode design documents as the source of truth, with a backlog.org file as an ephemeral working surface. This is a template/scaffolding system, not a compiled application.
+dev-agent-backlog is a task management system for human-agent collaboration, built on two core ideas:
+
+1. **backlog.org as universal hub** - A human-readable join table linking to tasks wherever they live (design docs, Claude Tasks, GitHub issues, etc.). Both humans and agents read the backlog; agents follow links to their native primitives.
+
+2. **Design docs for agent planning** - RFC/RFD-style org-mode documents where agents think through problems before executing. Design docs capture context, decisions, and tasks—then feed execution via `/queue-design-doc`.
+
+This is a template/scaffolding system, not a compiled application.
 
 ## Commands
 

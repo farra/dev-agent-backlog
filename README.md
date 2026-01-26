@@ -1,6 +1,10 @@
 # dev-agent-backlog
 
-A task management system designed for human-agent collaboration, using org-mode design documents as the source of truth.
+A task management system for human-agent collaboration, built on two ideas:
+
+1. **backlog.org as universal hub** - Human-readable join table linking to tasks wherever they live. Both humans and agents read the backlog; agents follow links to their native primitives (Claude Tasks, Beads, etc.).
+
+2. **Design docs for agent planning** - RFC/RFD-style org-mode documents where agents think through problems before executing. Context, decisions, and tasks in one place.
 
 ## Installation (Claude Code Plugin)
 
