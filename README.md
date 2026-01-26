@@ -84,10 +84,12 @@ Claude Code plugin commands (all prefixed with `backlog:`):
 - `/backlog:task-start <id>` - Begin work with context and handoff notes
 - `/backlog:task-complete <id> [version]` - Reconcile completed task with attribution
 - `/backlog:task-hold <id> <reason>` - Move task to blocked
+- `/backlog:task-link <id> --github|--claude-task|--bead|--design` - Add link properties
 
 Proactive skills (triggered automatically):
 - `backlog-update` - Reminds to update backlog and changelog before commits
 - `backlog-resume` - Surfaces WIP tasks and handoff notes on session start
+- `claude-tasks-sync` - Ensures Claude Tasks are cross-referenced in backlog.org
 - `new-design-doc` - Suggests creating design docs during architecture discussions
 
 ## The Workflow
@@ -226,6 +228,7 @@ Install the plugin once, use in any project:
 | `/backlog:task-start <id>` | Begin work with context and handoff notes |
 | `/backlog:task-complete <id> [version]` | Mark done with attribution |
 | `/backlog:task-hold <id> <reason>` | Move task to Blocked section |
+| `/backlog:task-link <id> <flags>` | Add link properties to existing task |
 
 ### Skills (Auto-triggered)
 
@@ -233,6 +236,7 @@ Install the plugin once, use in any project:
 |-------|---------|----------|
 | `backlog-resume` | Session start | Checks for WIP tasks, surfaces handoff notes |
 | `backlog-update` | Before commits | Reminds to update backlog, changelog, and handoff notes |
+| `claude-tasks-sync` | Using Claude Tasks | Ensures cross-references exist in backlog.org |
 | `new-design-doc` | Architecture discussions | Suggests creating design docs |
 | `setup` | "Set up design docs" | Interactive project initialization |
 

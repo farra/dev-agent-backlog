@@ -1,6 +1,6 @@
 #+TITLE: 012 - Claude Tasks Integration
 #+AUTHOR: dev-agent-backlog
-#+STATUS: Draft
+#+STATUS: Complete
 #+CATEGORY: feature
 #+CREATED: [2026-01-26]
 #+LAST_MODIFIED: [2026-01-26]

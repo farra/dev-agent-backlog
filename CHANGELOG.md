@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **Claude Tasks integration**: backlog.org now serves as universal hub linking to Claude Tasks
+- `/backlog:task-link` command to add link properties to existing backlog tasks
+- `claude-tasks-sync` skill to ensure Claude Tasks are cross-referenced in backlog.org
+- `:CLAUDE_TASK:` property for linking backlog entries to Claude Tasks
+- `/queue-design-doc` now creates Claude Task List and enters plan mode
+
+### Changed
+- Renamed `:SOURCE:` property to `:DESIGN:` (now optional, for hub model)
+- `task-start` now creates Claude Task at execution time for coordination
+- `backlog-resume` surfaces Claude Task links when resuming work
+- All link properties (`:DESIGN:`, `:CLAUDE_TASK:`, `:GITHUB:`, `:BEAD:`) are optional
+- Tasks can now originate directly in backlog.org without a design doc
+
+### Documentation
+- Updated project framing: two core pillars (backlog as hub, design docs for planning)
+- Added composability documentation (design-review vs queue-design-doc workflows)
+- Clarified sync means cross-references, not content replication
+
 ## [2.0.0] - 2026-01-26
 
 This release transforms dev-agent-backlog from a shell-script-installed template
