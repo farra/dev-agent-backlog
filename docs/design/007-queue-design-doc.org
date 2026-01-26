@@ -95,7 +95,7 @@ For each discovered task:
 
 If task ID not in =backlog.org=:
 - Add to =** Active= section
-- Use standard format with =:SOURCE:=, =:EFFORT:=, =:HANDOFF:=, =:WORKED_BY:=
+- Use standard format with =:DESIGN:=, =:EFFORT:=, =:HANDOFF:=, =:WORKED_BY:=
 
 *** Existing Tasks
 
@@ -197,7 +197,7 @@ Add 007 to =docs/design/README.org= index.
 :DECIDED: [2026-01-05]
 :END:
 
-No. The =:SOURCE:= link already points to the design doc. Adding another
+No. The =:DESIGN:= link already points to the design doc. Adding another
 property is redundant. The design doc number is also embedded in the task ID.
 
 ** DECIDED Should there be a companion /unqueue-design-doc command?

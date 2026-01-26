@@ -32,7 +32,7 @@ Add explicit =:HANDOFF:= property to backlog entries:
 #+begin_example
 *** WIP [DAB-005-01] Implement handoff notes
 :PROPERTIES:
-:SOURCE: [[file:...]]
+:DESIGN: [[file:...]]
 :HANDOFF: Stuck on lifetime issue in foo.rs:142. Try Arc<Mutex<>>
 :WORKED_BY: claude-code
 :END:

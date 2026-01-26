@@ -83,7 +83,7 @@ Add to `** Active` section:
 ```org
 *** TODO [TASK-ID] Task Title                                            :tags:
 :PROPERTIES:
-:SOURCE: [[file:docs/design/NNN-doc.org::*Tasks][TASK-ID in NNN-doc.org]]
+:DESIGN: [[file:docs/design/NNN-doc.org::*Tasks][TASK-ID in NNN-doc.org]]
 :EFFORT: <from source>
 :HANDOFF:
 :WORKED_BY:
@@ -99,14 +99,43 @@ Add to `** Active` section:
 - Preserve existing `:HANDOFF:` and `:WORKED_BY:`
 - Preserve existing progress notes
 
-### 5. Update Document Status
+### 5. Create Claude Task List
+
+For each queued task:
+- Create a Claude Task with matching ID and title
+- Add `:CLAUDE_TASK:` property to the backlog entry linking to the task
+- Set dependencies if task order implies them (sequential tasks depend on previous)
+
+This creates the coordination layer for multi-session/subagent work.
+
+### 6. Update Document Status
 
 After queuing tasks:
 - If `#+STATUS:` was `Accepted` (or `Draft`/`Review` and user confirmed), set to `Active`
 - Update `docs/design/README.org` index to reflect new status
 - Work has begun on this design doc
 
-### 6. Summary Output
+### 7. Enter Plan Mode
+
+Present the tasks as a plan for execution:
+
+```
+## Plan: Implement [Document Title]
+
+Based on design doc [NNN], executing these tasks:
+
+- [ ] [DAB-NNN-01] First task
+- [ ] [DAB-NNN-02] Second task
+- [ ] [DAB-NNN-03] Third task
+
+Claude Task List ID: <list-id>
+
+Proceed with plan?
+```
+
+The plan, backlog tasks, and Claude Tasks are now synchronized - all represent the same work.
+
+### 8. Summary Output
 
 Display results:
 
@@ -124,6 +153,11 @@ Display results:
 
 **Skipped:**
 - [DAB-007-03] Completed task (DONE)
+
+**Claude Tasks:**
+- Task List ID: <list-id>
+- Tasks created: 2
+- Plan mode: Active
 ```
 
 ## Examples

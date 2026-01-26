@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-dev-agent-backlog is a task management system for human-agent collaboration. It uses org-mode design documents as the source of truth, with a backlog.org file as an ephemeral working surface. This is a template/scaffolding system, not a compiled application.
+dev-agent-backlog is a task management system for human-agent collaboration, built on two core ideas:
+
+1. **backlog.org as universal hub** - A human-readable join table linking to tasks wherever they live (design docs, Claude Tasks, GitHub issues, etc.). Both humans and agents read the backlog; agents follow links to their native primitives.
+
+2. **Design docs for agent planning** - RFC/RFD-style org-mode documents where agents think through problems before executing. Design docs capture context, decisions, and tasks—then feed execution via `/queue-design-doc`.
+
+This is a template/scaffolding system, not a compiled application.
 
 ## Commands
 
@@ -18,20 +24,22 @@ There are no build, test, or lint commands - this is a documentation/workflow te
 
 ## Architecture
 
-### Core Pattern: Design Doc → Backlog → Reconcile
+### Core Pattern: Backlog as Hub
 
 ```
-Design Doc (canonical)          Backlog (working surface)
-** TODO [ID] Task              *** TODO [ID] Task
-                    ─checkout→  :SOURCE: [[file:...]]
-                                progress notes...
-** DONE [ID] Task              ←reconcile─ (removed)
+                        backlog.org (hub/glue)
+                              │
+         ┌────────────┬───────┴───────┬────────────┐
+         ▼            ▼               ▼            ▼
+    Design Doc    Claude Task    GitHub Issue    Bead
+    :DESIGN:      :CLAUDE_TASK:  :GITHUB:        :BEAD:
 ```
 
-1. Tasks originate in design docs (`docs/design/*.org`)
-2. Active tasks are "checked out" to `backlog.org` with `:SOURCE:` links
-3. Progress notes accumulate in backlog during work
-4. Completed tasks are reconciled back to design docs
+backlog.org is a human-readable hub linking to tasks wherever they live:
+1. Tasks can originate in design docs, GitHub issues, or Claude Tasks
+2. Active tasks are tracked in `backlog.org` with link properties
+3. Progress notes and `:HANDOFF:` accumulate in backlog during work
+4. Completed tasks are reconciled back to their source (if applicable)
 
 ### Key Files
 
@@ -72,6 +80,7 @@ document frontmatter to classify documents. Valid categories are defined in
 - `/task-start <id>` - Begin work: gather context, display handoff notes, update attribution
 - `/task-complete <id> [version]` - Mark done with attribution, prompt for changelog entry
 - `/task-hold <id> <reason>` - Move task to Blocked section
+- `/task-link <id> --github|--claude-task|--bead|--design` - Add link properties to existing task
 - `/new-design-doc <title> [source.md]` - Create new design doc (or convert markdown)
 - `/queue-design-doc <doc>` - Queue all tasks from a design doc with pre-flight checks
 
@@ -79,12 +88,18 @@ document frontmatter to classify documents. Valid categories are defined in
 
 - `backlog-resume` - Triggers on session start; checks for WIP tasks and surfaces handoff notes
 - `backlog-update` - Triggers before commits; reminds to update backlog.org, changelog, and handoff notes
+- `claude-tasks-sync` - Triggers when using Claude Tasks; ensures cross-references exist in backlog.org
 - `new-design-doc` - Triggers during architectural discussions; suggests creating design docs
 
 ## Task Properties
 
-### Backlog Entry Properties
-- `:SOURCE:` - Link to canonical location in design doc
+### Backlog Entry Link Properties (all optional)
+- `:DESIGN:` - Link to canonical location in design doc
+- `:CLAUDE_TASK:` - Link to Claude Task for cross-session coordination
+- `:GITHUB:` - Link to GitHub issue
+- `:BEAD:` - Link to Bead reference
+
+### Backlog Entry Metadata Properties
 - `:EFFORT:` - Estimated effort (S, M, L or time)
 - `:HANDOFF:` - Notes for next session (what to try, where stuck)
 - `:WORKED_BY:` - Who has worked on this (claude-code, human)

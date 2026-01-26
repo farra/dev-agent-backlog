@@ -1,6 +1,10 @@
 # dev-agent-backlog
 
-A task management system designed for human-agent collaboration, using org-mode design documents as the source of truth.
+A task management system for human-agent collaboration, built on two ideas:
+
+1. **backlog.org as universal hub** - Human-readable join table linking to tasks wherever they live. Both humans and agents read the backlog; agents follow links to their native primitives (Claude Tasks, Beads, etc.).
+
+2. **Design docs for agent planning** - RFC/RFD-style org-mode documents where agents think through problems before executing. Context, decisions, and tasks in one place.
 
 ## Installation (Claude Code Plugin)
 
@@ -80,10 +84,12 @@ Claude Code plugin commands (all prefixed with `backlog:`):
 - `/backlog:task-start <id>` - Begin work with context and handoff notes
 - `/backlog:task-complete <id> [version]` - Reconcile completed task with attribution
 - `/backlog:task-hold <id> <reason>` - Move task to blocked
+- `/backlog:task-link <id> --github|--claude-task|--bead|--design` - Add link properties
 
 Proactive skills (triggered automatically):
 - `backlog-update` - Reminds to update backlog and changelog before commits
 - `backlog-resume` - Surfaces WIP tasks and handoff notes on session start
+- `claude-tasks-sync` - Ensures Claude Tasks are cross-referenced in backlog.org
 - `new-design-doc` - Suggests creating design docs during architecture discussions
 
 ## The Workflow
@@ -111,28 +117,19 @@ Draft → Review → Accepted → Active → Complete
 ### Task Lifecycle
 
 ```
-Design Doc                    Backlog
-┌──────────────────┐          ┌──────────────────┐
-│ ** TODO [ID]     │─checkout→│ *** TODO [ID]    │
-│                  │          │ :SOURCE: link    │
-└──────────────────┘          │ progress notes   │
-                              └────────┬─────────┘
-                                       │ work
-                                       ▼
-                              ┌──────────────────┐
-                              │ *** DONE [ID]    │
-                              └────────┬─────────┘
-                                       │ reconcile
-                                       ▼
-┌──────────────────┐          ┌──────────────────┐
-│ ** DONE [ID]     │←─────────│ (removed)        │
-│ :VERSION: v1.0   │          └──────────────────┘
-└──────────────────┘
+                        backlog.org (hub)
+                              │
+         ┌────────────┬───────┴───────┬────────────┐
+         ▼            ▼               ▼            ▼
+    Design Doc    Claude Task    GitHub Issue    Bead
+    :DESIGN:      :CLAUDE_TASK:  :GITHUB:        :BEAD:
 ```
 
-1. **Checkout**: Copy task to backlog Active section with `:SOURCE:` link
-2. **Work**: Add progress notes under the task
-3. **Reconcile**: Mark DONE in design doc, remove from backlog
+backlog.org is a human-readable hub linking to tasks wherever they live.
+
+1. **Queue**: Add task to backlog with link property (`:DESIGN:`, `:GITHUB:`, etc.)
+2. **Work**: Add progress notes, update `:HANDOFF:` for session continuity
+3. **Complete**: Reconcile back to source (design doc, GitHub, etc.) and remove from backlog
 
 ## Getting Started
 
@@ -231,6 +228,7 @@ Install the plugin once, use in any project:
 | `/backlog:task-start <id>` | Begin work with context and handoff notes |
 | `/backlog:task-complete <id> [version]` | Mark done with attribution |
 | `/backlog:task-hold <id> <reason>` | Move task to Blocked section |
+| `/backlog:task-link <id> <flags>` | Add link properties to existing task |
 
 ### Skills (Auto-triggered)
 
@@ -238,13 +236,19 @@ Install the plugin once, use in any project:
 |-------|---------|----------|
 | `backlog-resume` | Session start | Checks for WIP tasks, surfaces handoff notes |
 | `backlog-update` | Before commits | Reminds to update backlog, changelog, and handoff notes |
+| `claude-tasks-sync` | Using Claude Tasks | Ensures cross-references exist in backlog.org |
 | `new-design-doc` | Architecture discussions | Suggests creating design docs |
 | `setup` | "Set up design docs" | Interactive project initialization |
 
 ### Task Properties
 
-Tasks in the backlog track:
-- `:SOURCE:` - Link to canonical location in design doc
+Tasks in the backlog can link to multiple sources (all optional):
+- `:DESIGN:` - Link to canonical location in design doc
+- `:CLAUDE_TASK:` - Link to Claude Task for cross-session coordination
+- `:GITHUB:` - Link to GitHub issue
+- `:BEAD:` - Link to Bead reference
+
+Tasks also track:
 - `:HANDOFF:` - Notes for next session (what to try, where stuck)
 - `:WORKED_BY:` - Who has worked on this (claude-code, human)
 

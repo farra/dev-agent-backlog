@@ -11,7 +11,7 @@ Mark task **$1** as DONE and reconcile with source document.
 
 1. **Find task in backlog.org** under `* Current WIP` > `** Active`:
    - Look for `*** TODO [$1]` or `*** WIP [$1]` entry
-   - Get `:SOURCE:` link to find canonical location
+   - Get `:DESIGN:` link to find canonical location (if present)
    - Note `:WORKED_BY:` value for attribution
 
 2. **Gather attribution**:
@@ -77,4 +77,4 @@ CLOSED: [2026-01-04]
 ## Files
 
 - Backlog: @backlog.org (Current WIP section)
-- Follow `:SOURCE:` link to find canonical location
+- Follow `:DESIGN:` link to find canonical location (if present)

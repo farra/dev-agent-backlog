@@ -29,16 +29,16 @@ This is the *working surface* for development.
 
 ** Workflow
 
-1. *Checkout*: Copy task to Active with =:SOURCE:= link
-2. *Work*: Add progress notes under the task
-3. *Reconcile*: Update design doc, remove from here
+1. *Queue*: Add task to Active with link property (=:DESIGN:=, =:GITHUB:=, etc.)
+2. *Work*: Add progress notes, update =:HANDOFF:= for session continuity
+3. *Complete*: Reconcile to source, remove from here
 
 ** Task Format
 
 #+begin_example
 *** TODO [PROJECT-NNN-XX] Task title
 :PROPERTIES:
-:SOURCE: [[file:docs/design/NNN-doc.org::*Tasks][NNN Tasks]]
+:DESIGN: [[file:docs/design/NNN-doc.org::*Tasks][NNN Tasks]]
 :EFFORT: M
 :HANDOFF:
 :WORKED_BY:
@@ -46,6 +46,15 @@ This is the *working surface* for development.
 
 [YYYY-MM-DD] Progress notes here.
 #+end_example
+
+** Link Properties (all optional)
+
+- =:DESIGN:= - Link to design doc task definition
+- =:CLAUDE_TASK:= - Link to Claude Task for agent coordination
+- =:GITHUB:= - Link to GitHub issue
+- =:BEAD:= - Link to Bead reference
+
+** Metadata Properties
 
 - =:HANDOFF:= - Notes for next session (what to try, where stuck)
 - =:WORKED_BY:= - Who has worked on this (claude-code, human)

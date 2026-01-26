@@ -34,14 +34,14 @@ Check out a task from design doc to backlog:
 1. Find task in =docs/design/*.org= by ID
 2. Extract heading, effort, source location
 3. Add to =backlog.org= under =** Active=
-4. Include =:SOURCE:= link
+4. Include =:DESIGN:= link
 
 *** /task-complete <task-id> [version]
 
 Reconcile completed task back to design doc:
 
 1. Find task in =backlog.org= Active section
-2. Follow =:SOURCE:= to design doc
+2. Follow =:DESIGN:= to design doc
 3. Mark =DONE= with =CLOSED:= timestamp
 4. Add =:VERSION:= if provided
 5. Remove from backlog
@@ -59,7 +59,7 @@ Move task to blocked:
 Begin work on a task:
 
 1. If not in backlog, run /task-queue first
-2. Read task context from =:SOURCE:=
+2. Read task context from =:DESIGN:=
 3. Read related design doc sections
 4. Prepare implementation plan
 5. Present plan for review
