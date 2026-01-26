@@ -370,29 +370,49 @@ The backlog is the central sync point connecting all representations:
 | Task completes               | Update all representations                |
 | Subagent creates Task        | Flows back to backlog via sync skill      |
 
-** The Sync Skill
+** The Sync Skill (Cross-Reference, Not Content Replication)
 
-Bidirectional sync is handled by one skill (=claude-tasks-sync=):
+"Sync" means *ensuring cross-references exist*, not replicating content:
 
 #+begin_quote
-"When using Claude Tasks, sync them to backlog.org"
+"When using Claude Tasks, ensure they're linked from backlog.org"
 #+end_quote
 
-The skill does:
-1. When Claude creates/updates Tasks, ensure matching backlog entry exists
-2. If backlog entry exists, verify link is present
-3. If backlog entry doesn't exist, create it with =:CLAUDE_TASK:= link
+*** What Sync Does
 
-Going the *other* direction (backlog → Claude Task) only happens at execution
-time—when we queue a single task OR an entire design doc for active work.
+| Action                        | Result                                    |
+|-------------------------------+-------------------------------------------|
+| Claude creates Task           | Create backlog entry with =:CLAUDE_TASK:= link |
+| Backlog task starts execution | Create Claude Task, add link to backlog   |
+| Task completes                | Update status in both (follow links)      |
+
+*** What Sync Does NOT Do
+
+- Copy task descriptions between systems
+- Mirror status changes automatically
+- Duplicate effort/metadata bidirectionally
+
+*** Why Links, Not Duplication
+
+- *Humans* read backlog.org directly—see all active work in one place
+- *Agents* read backlog.org, then follow =:CLAUDE_TASK:= links to native primitives
+- *Same task* can exist in multiple systems; backlog.org is the join table
+- *No duplication* of content—just links and handoff notes
 
 #+begin_example
-Claude Tasks → backlog.org: Always (via sync skill)
-backlog.org → Claude Tasks: Only at execution time
+backlog.org entry:
+*** TODO [DAB-012-08] Create sync skill
+:PROPERTIES:
+:DESIGN: [[file:...]]           ← human reads design doc
+:CLAUDE_TASK: [[file:...]]      ← agent follows to Claude Task
+:HANDOFF: Working on skill triggers
+:END:
+
+(Task details live in design doc and Claude Task - not copied here)
 #+end_example
 
-This keeps backlog.org as the authoritative human-readable view while letting
-Claude use its native primitives for coordination.
+The skill (=claude-tasks-sync=) is lightweight: just ensure the cross-reference
+exists so navigation works for both audiences.
 
 ** During Execution
 
@@ -601,15 +621,12 @@ Update docs/design/003, 005, 007 with renamed property.
 :EFFORT: M
 :END:
 
-New skill that monitors Claude Task creation/updates and ensures matching
-backlog entries exist:
-- When Claude creates a Task, check if backlog entry exists
-- If exists, verify link is present
-- If not, create backlog entry with =:CLAUDE_TASK:= link
-- Single direction: Claude Tasks → backlog.org (always)
+Lightweight skill that ensures cross-references exist (not content replication):
+- When Claude creates a Task, create backlog entry with =:CLAUDE_TASK:= link
+- Backlog entry contains link + handoff notes only, not duplicated content
+- Humans read backlog directly; agents follow links to native primitives
 
-This is the core sync mechanism. The reverse direction (backlog → Claude Task)
-happens only at execution time via task-start or queue-design-doc.
+This ensures both audiences can navigate to the task in their preferred format.
 
 *** TODO [DAB-012-09] Add :CLAUDE_TASK: support to task-start            :p1:
 :PROPERTIES:
