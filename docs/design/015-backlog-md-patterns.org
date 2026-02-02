@@ -1,0 +1,479 @@
+#+TITLE: 015 - Backlog.md Patterns Analysis
+#+AUTHOR: dev-agent-backlog
+#+STATUS: Draft
+#+CATEGORY: research
+#+CREATED: [2026-02-01]
+#+LAST_MODIFIED: [2026-02-01]
+#+SETUPFILE: ../../org-setup.org
+
+* Summary
+
+Analysis of patterns from [[https://github.com/MrLesk/Backlog.md][Backlog.md]], a markdown-native task manager with CLI,
+web UI, and MCP integration. This complements our earlier research on
+[[file:008-compound-engineering-patterns.org][Compound Engineering]] and [[file:009-beads-features.org][Beads]]. While Backlog.md takes a different philosophical
+approach (tasks as primary vs our design-docs-as-primary), several of its
+patterns could enhance dev-agent-backlog.
+
+* Context: Philosophical Differences
+
+** Backlog.md's Approach
+
+Backlog.md is a *task tracker first*:
+- Each task is a standalone markdown file with YAML frontmatter
+- Tasks are the source of truth
+- Design/documentation is secondary (stored in =backlog/docs/=)
+- Optimized for Jira/Linear-style workflows in plain text
+
+File structure:
+#+begin_example
+backlog/
+├── tasks/
+│   ├── back-123 - Feature-title.md
+│   └── back-124 - Another-task.md
+├── completed/
+├── archive/
+├── docs/
+├── decisions/
+└── config.yml
+#+end_example
+
+Task file format:
+#+begin_example
+---
+id: BACK-123
+title: Add OAuth System
+status: In Progress
+assignee: ["@sara"]
+created_date: '2025-07-23'
+labels: [auth, backend]
+priority: high
+dependencies: [task-120, task-121]
+---
+
+## Description
+...
+
+## Acceptance Criteria
+<!-- AC:BEGIN -->
+- [ ] #1 OAuth flow implemented
+- [ ] #2 Token refresh works
+<!-- AC:END -->
+#+end_example
+
+** dev-agent-backlog's Approach
+
+We are *design-doc first*:
+- Tasks exist because of design decisions
+- Design docs are the source of truth
+- The backlog is an ephemeral working surface
+- Optimized for RFC/RFD-style workflows
+
+The key insight: tasks without decision context become disconnected from "why."
+Our approach keeps the why (design doc) and the what (tasks) together.
+
+** Complementary, Not Competing
+
+These approaches serve different needs:
+
+| Need | Backlog.md | dev-agent-backlog |
+|------+------------+-------------------|
+| "Track bugs and features" | Primary use case | Can do, but verbose |
+| "Document architecture decisions" | Secondary (docs/) | Primary use case |
+| "Plan before executing" | Via task fields | Via design doc sections |
+| "Quick task creation" | Excellent (CLI) | Slower (needs doc context) |
+| "Audit trail of decisions" | Weak | Strong |
+
+* Patterns Worth Adopting
+
+** Pattern 1: Definition of Done Defaults
+
+Backlog.md allows project-wide DoD items that apply to every new task:
+
+#+begin_example
+# config.yml
+definition_of_done:
+  - Tests pass
+  - Documentation updated
+  - No regressions introduced
+#+end_example
+
+These are automatically added to every task. Individual tasks can add more
+items or disable defaults.
+
+*** Value for dev-agent-backlog
+
+We could add DoD defaults to =README.org= or =org-setup.org=:
+
+#+begin_example
+# README.org
+* Definition of Done Defaults
+
+Standard items for all tasks in this project:
+
+| Item | Description |
+|------+-------------|
+| Tests | All tests pass |
+| Lint | No new warnings |
+| Docs | Documentation updated if needed |
+#+end_example
+
+The =/task-complete= command would verify these are satisfied before marking
+done. Could be org-mode checkboxes or a property.
+
+*** Complexity: Low
+*** Value: Medium
+
+** Pattern 2: Final Summary Field
+
+Backlog.md distinguishes between:
+- *Implementation Notes*: Progress logging during work (like our =:HANDOFF:=)
+- *Final Summary*: PR-style summary written when task completes
+
+#+begin_example
+## Final Summary
+
+Implemented OAuth 2.0 flow with PKCE for SPA clients.
+
+**Changes:**
+- Added /auth/login and /auth/callback endpoints
+- Integrated with Auth0 as identity provider
+- Token refresh handled automatically by client SDK
+
+**Tests:**
+- Unit tests for token validation
+- Integration tests for full OAuth flow
+
+**Known limitations:**
+- Refresh token rotation not yet implemented (follow-up: BACK-456)
+#+end_example
+
+*** Value for dev-agent-backlog
+
+Our =:HANDOFF:= is for mid-work context. A =:FINAL_SUMMARY:= property on
+completed tasks would capture what was actually done:
+
+#+begin_example
+** DONE [DAB-005-01] Implement handoff notes
+CLOSED: [2026-01-26]
+:PROPERTIES:
+:FINAL_SUMMARY: Added :HANDOFF: property to task format. Templates and
+:FINAL_SUMMARY+: task-queue command updated. Works with multi-line values
+:FINAL_SUMMARY+: via org property continuation.
+:COMPLETED_BY: claude-code
+:END:
+#+end_example
+
+This helps future reconciliation understand what was actually shipped.
+
+*** Complexity: Low
+*** Value: Medium
+
+** Pattern 3: Structured Acceptance Criteria
+
+Backlog.md uses marked sections for acceptance criteria:
+
+#+begin_example
+## Acceptance Criteria
+<!-- AC:BEGIN -->
+- [ ] #1 OAuth flow implemented
+- [ ] #2 Token refresh works
+- [ ] #3 Error handling complete
+<!-- AC:END -->
+#+end_example
+
+Criteria are numbered and can be checked/unchecked via CLI:
+#+begin_example
+backlog task edit 123 --check-ac 1
+backlog task edit 123 --uncheck-ac 2
+#+end_example
+
+*** Value for dev-agent-backlog
+
+We already have tasks with descriptions, but explicit numbered criteria
+would help both humans and agents verify completion. Could use org checkboxes:
+
+#+begin_example
+** TODO [DAB-014-01] Implement feature
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+*** Acceptance Criteria
+- [ ] 1. OAuth flow implemented
+- [ ] 2. Token refresh works
+- [ ] 3. Error handling complete
+
+*** Description
+Detailed description here...
+#+end_example
+
+The =/task-complete= command would verify all boxes checked.
+
+*** Complexity: Medium (template changes, command updates)
+*** Value: Medium
+
+** Pattern 4: Search-First Workflow
+
+Backlog.md's MCP guidelines emphasize searching before creating:
+
+#+begin_quote
+When the user requests non-trivial work:
+1. *Search first*: Use task_search or task_list - work might already be tracked
+2. *If found*: Work on the existing task
+3. *If not found*: Create task(s)
+#+end_quote
+
+*** Value for dev-agent-backlog
+
+Our skills should prompt agents to check existing tasks before creating:
+
+#+begin_example
+# In backlog-update skill or task-queue command
+
+Before creating a new task:
+1. Search backlog.org Active section for related work
+2. Search design docs for existing tasks matching the request
+3. Only create new if nothing found
+#+end_example
+
+This is more of a guidance/skill enhancement than a feature.
+
+*** Complexity: Low
+*** Value: Low-Medium
+
+** Pattern 5: MCP-Native Task Management
+
+Backlog.md provides a full MCP server for task operations:
+
+| Tool | Purpose |
+|------+---------|
+| task_list | List tasks with filters |
+| task_search | Fuzzy search tasks |
+| task_view | Read full task details |
+| task_create | Create new task |
+| task_edit | Update task fields |
+
+Agents never edit markdown directly - all operations go through MCP tools.
+
+*** Value for dev-agent-backlog
+
+We currently use file-based operations via Claude Code commands. An MCP server
+could provide:
+- Structured task operations
+- Validation before writes
+- Consistent formatting
+- Cross-session state
+
+However, this adds significant complexity. Our file-based approach with
+commands/skills may be sufficient for most use cases.
+
+*** Complexity: High
+*** Value: Medium (marginal over current approach)
+
+** Pattern 6: Task Dependencies
+
+Backlog.md tracks explicit dependencies:
+
+#+begin_example
+---
+id: BACK-123
+dependencies: [task-120, task-121]
+---
+#+end_example
+
+The board view shows sequences, and the CLI prevents circular dependencies.
+
+*** Value for dev-agent-backlog
+
+We have implicit ordering via task numbering ([DAB-005-01] comes before
+[DAB-005-02]) but no explicit blocking relationships. Could add:
+
+#+begin_example
+** TODO [DAB-014-02] Implement step 2
+:PROPERTIES:
+:BLOCKED_BY: DAB-014-01
+:END:
+#+end_example
+
+The =backlog-resume= skill could then show only unblocked tasks.
+
+This was also considered in [[file:009-beads-features.org][009 - Beads-Inspired Features]].
+
+*** Complexity: Medium
+*** Value: Low (single-agent context reduces need)
+
+** Pattern 7: Subtask Numbering
+
+Backlog.md uses decimal notation for subtasks:
+
+#+begin_example
+BACK-217      - Parent task
+BACK-217.01   - First subtask
+BACK-217.02   - Second subtask
+#+end_example
+
+*** Value for dev-agent-backlog
+
+We already do this! Our format is =[PROJECT-NNN-XX]= where XX is the task
+sequence within a design doc. What we call "tasks" are effectively subtasks
+of the design doc.
+
+No change needed - we have this pattern.
+
+*** Complexity: N/A
+*** Value: N/A (already implemented)
+
+** Pattern 8: Implementation Plan as Task Field
+
+Backlog.md requires recording the implementation plan IN the task before
+coding:
+
+#+begin_quote
+Non-negotiable: Capture an implementation plan in the Backlog task BEFORE
+writing any code. The plan must live in the task record prior to
+implementation and remain up to date when you close the task.
+#+end_quote
+
+*** Value for dev-agent-backlog
+
+Our design docs already capture this - the design doc IS the plan. But for
+individual tasks, we could encourage adding implementation notes:
+
+#+begin_example
+** TODO [DAB-014-01] Implement feature
+:PROPERTIES:
+:EFFORT: M
+:END:
+
+*** Plan
+1. Read existing auth module
+2. Add OAuth endpoints to router
+3. Implement token validation
+4. Add tests
+
+*** Acceptance Criteria
+...
+#+end_example
+
+This is more of a template/guideline change than a feature.
+
+*** Complexity: Low
+*** Value: Low (design doc already serves this purpose)
+
+* Patterns to Skip
+
+** Web UI
+
+Backlog.md has a full web interface (=backlog browser=). We intentionally
+stay file/editor-native with org-mode and Emacs integration. A web UI would
+be a major scope expansion with limited value for our target users.
+
+** Standalone CLI Tool
+
+Backlog.md is a full CLI (=npm i -g backlog.md=). We're a Claude Code plugin
+that enhances agent workflows. Building a standalone CLI would duplicate
+what Claude Code provides.
+
+** Task-Centric Model
+
+Their "task file per issue" model works for traditional issue tracking but
+loses the design context we prioritize. Adopting this would undermine our
+core value proposition.
+
+* Decision
+
+Adopt patterns incrementally based on value/complexity ratio:
+
+** Phase 1: Low-Hanging Fruit
+
+1. *Search-first guidance* - Update skills to remind agents to check existing
+   tasks before creating new ones
+
+2. *Final Summary property* - Add =:FINAL_SUMMARY:= to completed tasks via
+   =/task-complete= command
+
+** Phase 2: Template Enhancements
+
+3. *Structured Acceptance Criteria* - Add AC section to task template with
+   org checkboxes
+
+4. *Definition of Done defaults* - Add DoD section to =README.org= template,
+   verify in =/task-complete=
+
+** Phase 3: Evaluate Later
+
+5. *Explicit dependencies* - Revisit if single-agent workflow becomes
+   multi-agent
+
+6. *MCP server* - Revisit if file-based approach shows limitations
+
+* Tasks
+:PROPERTIES:
+:CATEGORY: tasks
+:END:
+
+** TODO [DAB-015-01] Add search-first guidance to skills                    :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Update =backlog-update= and =new-design-doc= skills to remind agents to
+search for existing tasks before creating new ones.
+
+** TODO [DAB-015-02] Add FINAL_SUMMARY to task-complete                     :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Update =/task-complete= command to prompt for a final summary and add
+=:FINAL_SUMMARY:= property to completed tasks in design docs.
+
+** TODO [DAB-015-03] Add acceptance criteria to task template               :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Update =000-template.org= to include an Acceptance Criteria section with
+org checkboxes under each task heading.
+
+** TODO [DAB-015-04] Add DoD defaults to README.org template                :p2:
+:PROPERTIES:
+:EFFORT: S
+:END:
+
+Add Definition of Done section to =plugin/templates/readme-project.org=
+with common default items. Update =/task-complete= to verify DoD.
+
+* Questions
+:PROPERTIES:
+:CATEGORY: questions
+:END:
+
+** OPEN Should FINAL_SUMMARY be a property or a heading?
+
+Options:
+- Property: =:FINAL_SUMMARY:= (consistent with other metadata)
+- Heading: =*** Final Summary= under the task (more readable for long summaries)
+- Both: Property for short, heading for long
+
+Leaning toward: Property with continuation (=:FINAL_SUMMARY+:=) for multi-line.
+
+** OPEN How strict should DoD verification be?
+
+Options:
+- Advisory: Remind but allow completion anyway
+- Blocking: Require all DoD items checked before =/task-complete= proceeds
+- Configurable: Per-project setting in README.org
+
+Leaning toward: Advisory for now, blocking can come later.
+
+* References
+
+- [[https://github.com/MrLesk/Backlog.md][Backlog.md Repository]]
+- [[file:008-compound-engineering-patterns.org][008 - Compound Engineering Patterns]]
+- [[file:009-beads-features.org][009 - Beads-Inspired Features]]
+- [[file:005-gastown-features.org][005 - Gastown-Inspired Features]]
+
+* Changelog
+
+- *2026-02-01:* Initial analysis

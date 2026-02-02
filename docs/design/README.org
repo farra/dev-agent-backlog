@@ -40,6 +40,7 @@ its rationale, and any implementation tasks.
 | 012 | [[file:012-claude-tasks-integration.org][Claude Tasks Integration]] | Complete |
 | 013 | [[file:013-reconciliation-commands.org][Reconciliation Commands]] | Active |
 | 014 | [[file:014-spec-driven-development-research.org][Spec-Driven Development Research]] | Complete |
+| 015 | [[file:015-backlog-md-patterns.org][Backlog.md Patterns Analysis]] | Draft |
 
 ** Templates
 
